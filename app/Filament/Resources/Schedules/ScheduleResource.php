@@ -4,6 +4,7 @@ namespace App\Filament\Resources\Schedules;
 
 use App\Filament\Resources\Schedules\Pages\ManageSchedules;
 use App\Models\Schedule;
+use App\Models\Subject;
 use BackedEnum;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteAction;
@@ -48,12 +49,12 @@ class ScheduleResource extends Resource
             ->components([
                 Select::make('dia_semana')
                     ->options([
-            'lunes' => 'Lunes',
-            'martes' => 'Martes',
-            'miercoles' => 'Miercoles',
-            'jueves' => 'Jueves',
-            'viernes' => 'Viernes',
-        ])
+                        'lunes' => 'Lunes',
+                        'martes' => 'Martes',
+                        'miercoles' => 'Miercoles',
+                        'jueves' => 'Jueves',
+                        'viernes' => 'Viernes',
+                    ])
                     ->placeholder('Día de la semana')
                     ->required(),
                 TextInput::make('horas')
@@ -63,7 +64,12 @@ class ScheduleResource extends Resource
                 Select::make('subject_id')
                     ->placeholder('Asignatura')
                     ->required()
-                    ->relationship('subject', 'nombre'),
+                    ->options(function () {
+                        if (auth()->user()->hasRole('profesor')) {
+                            return auth()->user()->subjects()->pluck('subjects.nombre', 'subjects.id');
+                        }
+                        return Subject::pluck('nombre', 'id');
+                    }),
             ]);
     }
 
@@ -127,11 +133,29 @@ class ScheduleResource extends Resource
 
     public static function getNavigationBadge(): ?string
     {
+        if (auth()->user()->hasRole('profesor')) {
+            $subjectIds = auth()->user()->subjects()->pluck('subjects.id');
+            return Schedule::whereIn('subject_id', $subjectIds)->count();
+        }
+
         return static::getModel()::count();
     }
 
     public static function getNavigationBadgeTooltip(): ?string
     {
         return 'The number of schedules';
+    }
+
+    public static function getEloquentQuery(): Builder
+    {
+        $query = parent::getEloquentQuery();
+
+        if (auth()->user()->hasRole('profesor')) {
+            $asignaturasId = auth()->user()->subjects()->pluck('subjects.id');
+
+            return $query->whereIn('subject_id', $asignaturasId);
+        }
+
+        return $query;
     }
 }

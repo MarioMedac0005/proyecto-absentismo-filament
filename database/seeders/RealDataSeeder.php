@@ -8,6 +8,7 @@ use App\Models\Schedule;
 use App\Models\Subject;
 use App\Models\Type;
 use Carbon\Carbon;
+use Hash;
 use Illuminate\Database\Seeder;
 
 class RealDataSeeder extends Seeder
@@ -58,10 +59,11 @@ class RealDataSeeder extends Seeder
 
         $teachers = [];
         foreach ($teachersNames as $name) {
-            $teachers[] = \App\Models\Teacher::create([
-                'nombre' => $name,
+            $teachers[] = \App\Models\User::create([
+                'name' => $name,
                 'email' => strtolower(str_replace(' ', '.', $name)) . '@example.com',
-                'telefono' => '600' . rand(100000, 999999),
+                'phone' => '600' . rand(100000, 999999),
+                'password' => Hash::make('Usuario123!'),
             ]);
         }
 
@@ -165,9 +167,9 @@ class RealDataSeeder extends Seeder
 
             // Assign a random teacher
             $teacher = $teachers[array_rand($teachers)];
-            \App\Models\SubjectTeacher::create([
+            \App\Models\SubjectUser::create([
                 'subject_id' => $subject->id,
-                'teacher_id' => $teacher->id,
+                'user_id' => $teacher->id,
             ]);
 
             $this->createScheduleForSubject($subject, $hours);

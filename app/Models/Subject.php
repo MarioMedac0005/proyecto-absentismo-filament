@@ -18,9 +18,9 @@ class Subject extends Model
         'course_id'
     ];
 
-    public function subjectTeachers()
+    public function subjectUsers()
     {
-        return $this->hasMany(SubjectTeacher::class);
+        return $this->hasMany(SubjectUser::class);
     }
 
     public function course()

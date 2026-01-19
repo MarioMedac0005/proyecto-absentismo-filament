@@ -2,6 +2,9 @@
 
 namespace App\Providers\Filament;
 
+use App\Filament\Widgets\DownloadTemporalizationWidget;
+use Filament\Auth\Pages\PasswordReset\RequestPasswordReset;
+use Filament\Auth\Pages\PasswordReset\ResetPassword;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
@@ -10,7 +13,6 @@ use Filament\Pages\Dashboard;
 use Filament\Panel;
 use Filament\PanelProvider;
 use Filament\Support\Colors\Color;
-use Filament\Support\Enums\Width;
 use Filament\Widgets\AccountWidget;
 use Filament\Widgets\FilamentInfoWidget;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
@@ -32,6 +34,10 @@ class AdminPanelProvider extends PanelProvider
             ->id('admin')
             ->path('admin') // Quitar si queremos que no tenga una ruta y quitar si hay alguna ruta que ocupe el /
             ->login()
+            ->passwordReset(
+                RequestPasswordReset::class,
+                ResetPassword::class
+            )
             ->colors([
                 'primary' => Color::Blue,
             ])
@@ -44,6 +50,7 @@ class AdminPanelProvider extends PanelProvider
             ->widgets([
                 AccountWidget::class,
                 FilamentInfoWidget::class,
+                DownloadTemporalizationWidget::class,
             ])
             ->middleware([
                 EncryptCookies::class,

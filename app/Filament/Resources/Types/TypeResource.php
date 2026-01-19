@@ -115,4 +115,9 @@ class TypeResource extends Resource
     {
         return 'The number of types';
     }
+
+    public static function canViewAny(): bool
+    {
+        return auth()->user()->hasRole('admin');
+    }
 }

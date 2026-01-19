@@ -11,13 +11,10 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('teachers', function (Blueprint $table) {
-            $table->id();
-            $table->string('nombre');
-            $table->string('email')->nullable();
-            $table->string('telefono')->nullable();
+        Schema::create('temporalization_settings', function (Blueprint $table) {
+            $table->string('key', 50)->primary();
+            $table->boolean('value')->default(false);
             $table->timestamps();
-            $table->softDeletes();
         });
     }
 
@@ -26,6 +23,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('teachers');
+        Schema::dropIfExists('temporalization_settings');
     }
 };

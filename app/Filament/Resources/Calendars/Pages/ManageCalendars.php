@@ -21,7 +21,7 @@ class ManageCalendars extends ManageRecords
                 ->modalDescription('Introduce los datos del calendario')
                 ->modalIcon('heroicon-o-calendar')
                 ->modalWidth('xl')
-                ->using(function (array $data, string $model): Model {
+                /* ->using(function (array $data, string $model): Model {
                     // Check if we are in 'range' mode
                     if (($data['tipo_fecha'] ?? 'dia') === 'rango' && !empty($data['rango'])) {
                         
@@ -56,7 +56,7 @@ class ManageCalendars extends ManageRecords
 
                     // Fallback for single day selection
                     return $model::create($data);
-                }),
+                }), */
         ];
     }
 }

@@ -1,59 +1,90 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# 📚 Proyecto de Control de Absentismo y Horarios
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+Este proyecto ha sido desarrollado como un trabajo de **subida de nota**, centrado en la gestión eficiente de horarios escolares, control de absentismo y generación automática de temporalizaciones.
 
-## About Laravel
+## 🚀 Descripción del Proyecto
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+La aplicación permite gestionar el calendario escolar y los horarios de los profesores, automatizando cálculos complejos que normalmente se harían manualmente.
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+### 🌟 Funcionalidades Principales
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+1.  **Gestión de Horarios de Profesores**:
+    -   Los profesores pueden registrar su horario semanal para cada asignatura.
+    -   Interfaz intuitiva para asignar horas a cada día de la semana.
 
-## Learning Laravel
+2.  **Cálculo Automático de Horas por Trimestre**:
+    -   El sistema calcula automáticamente las horas lectivas reales para cada trimestre.
+    -   **Algoritmo inteligente**: Tiene en cuenta el calendario escolar registrado previamente, excluyendo días festivos y periodos vacacionales definidos en la base de datos.
+    
+3.  **Generación de Calendario Visual (PDF)**:
+    -   Generación automática de un PDF con la temporalización visual del curso.
+    -   El PDF muestra el calendario completo organizado por meses y trimestres, destacando festivos y eventos.
+    -   Ideal para planificación docente y cumplimiento normativo.
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework. You can also check out [Laravel Learn](https://laravel.com/learn), where you will be guided through building a modern Laravel application.
+## 🛠️ Stack Tecnológico
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+-   **Framework PHP**: [Laravel](https://laravel.com/)
+-   **Panel de Administración**: [FilamentPHP](https://filamentphp.com/) (Gestión de recursos, tablas y formularios)
+-   **Generación de PDF**: [laravel-dompdf](https://github.com/barryvdh/laravel-dompdf)
+-   **Base de Datos**: MySQL
 
-## Laravel Sponsors
+## 📋 Requisitos Previos
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+-   PHP ^8.2
+-   Composer
+-   Node.js & NPM
 
-### Premium Partners
+## 🔧 Instalación y Configuración
 
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
+Sigue estos pasos para desplegar el proyecto en local:
 
-## Contributing
+1.  **Clonar el repositorio**:
+    ```bash
+    git clone <url-del-repositorio>
+    cd ProyectoAbsentismo
+    ```
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+2.  **Instalar dependencias de PHP**:
+    ```bash
+    composer install
+    ```
 
-## Code of Conduct
+3.  **Instalar dependencias de Frontend**:
+    ```bash
+    npm install
+    npm run build
+    ```
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+4.  **Configurar entorno**:
+    ```bash
+    cp .env.example .env
+    php artisan key:generate
+    ```
 
-## Security Vulnerabilities
+5.  **Base de Datos**:
+    Configura tu conexión a base de datos en el archivo `.env` y ejecuta las migraciones:
+    ```bash
+    php artisan migrate
+    ```
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+6.  **Crear usuarios en el sistema**:
+    El proyecto incluye un comando personalizado para crear usuarios con roles específicos (admin o profesor):
 
-## License
+    ```bash
+    # Crear un administrador
+    php artisan make:user --role=admin
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+    # Crear un profesor
+    php artisan make:user --role=profesor
+    ```
+
+## 📄 Uso
+
+1.  Accede a `/admin` e inicia sesión.
+2.  Configura el **Calendario Escolar** con los días festivos.
+3.  Crea los **Cursos** definiendo las fechas de inicio y fin de cada trimestre.
+4.  Los profesores pueden acceder a **Horarios** para registrar sus horas semanales.
+5.  Desde la sección de **Cursos**, se puede descargar el PDF de temporalización.
+
+---
+Desarrollado por Mario como parte del proyecto de subida de nota.

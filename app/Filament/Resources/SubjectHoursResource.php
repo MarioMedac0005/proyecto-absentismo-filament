@@ -7,6 +7,7 @@ use App\Models\Subject;
 use Filament\Actions\Action;
 use Filament\Actions\ActionGroup;
 use Filament\Forms;
+use Illuminate\Database\Eloquent\Builder;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Tables;
@@ -42,7 +43,7 @@ class SubjectHoursResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
-            ->headerActions([
+            /* ->headerActions([
                 ActionGroup::make([
                     Action::make('exportar')
                         ->label('Exportar a Excel')
@@ -50,7 +51,7 @@ class SubjectHoursResource extends Resource
                         ->color('primary')
                         ->action(fn () => dd('Implementar exportar a Excel')),
                 ])
-            ])
+            ]) */
             ->columns([
                 Tables\Columns\TextColumn::make('nombre')
                     ->searchable()
@@ -106,5 +107,22 @@ class SubjectHoursResource extends Resource
         return [
             'index' => Pages\ListSubjectHours::route('/'),
         ];
+    }
+
+    public static function getEloquentQuery(): Builder
+    {
+        $query = parent::getEloquentQuery();
+
+        if (auth()->user()->hasRole('profesor')) {
+            $subjectIds = auth()->user()->subjects()->pluck('subjects.id'); // IMPORTANTE: especificar la tabla
+            return $query->whereIn('id', $subjectIds);
+        }
+
+        return $query; // Admin ve todo
+    }
+
+    public static function getNavigationBadge(): ?string
+    {
+        return static::getEloquentQuery()->count();
     }
 }

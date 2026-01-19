@@ -151,4 +151,9 @@ class CalendarResource extends Resource
     {
         return 'The number of calendars';
     }
+
+    public static function canViewAny(): bool
+    {
+        return auth()->user()->hasRole('admin');
+    }
 }

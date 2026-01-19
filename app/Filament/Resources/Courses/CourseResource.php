@@ -223,4 +223,9 @@ class CourseResource extends Resource
     {
         return 'The number of courses';
     }
+
+    public static function canViewAny(): bool
+    {
+        return auth()->user()->hasRole('admin');
+    }
 }

@@ -5,11 +5,11 @@
     <title>Temporalización - {{ $course->nombre }}</title>
     <style>
         @page {
-            margin: 10px 20px; /* Minimal margins */
+            margin: 10px 20px;
         }
         body {
             font-family: 'Helvetica', sans-serif;
-            font-size: 9px; /* Reduced base font size */
+            font-size: 9px;
             margin: 0;
             padding: 0;
         }
@@ -18,9 +18,9 @@
             background-color: #2c3e50;
             color: white;
             text-align: center;
-            padding: 4px; /* Reduced padding */
+            padding: 4px;
             font-weight: bold;
-            font-size: 11px; /* Smaller header */
+            font-size: 11px;
             margin-bottom: 10px;
         }
 
@@ -43,14 +43,13 @@
             vertical-align: top;
         }
 
-        /* Calendar Styles */
         .calendar-grid {
             width: 100%;
         }
 
         .month-container {
             page-break-inside: avoid;
-            margin-bottom: 8px; /* Reduced margin between rows */
+            margin-bottom: 8px;
             border: 1px solid #000;
         }
 
@@ -68,7 +67,7 @@
         .calendar-table {
             width: 100%;
             border-collapse: collapse;
-            font-size: 8px; /* Smaller calendar text */
+            font-size: 8px;
             text-align: center;
             table-layout: fixed;
         }
@@ -86,7 +85,7 @@
         }
 
         .calendar-table td {
-            height: 14px; /* COMPACT FIXED HEIGHT */
+            height: 14px;
             width: 14.2857%;
             vertical-align: middle;
             border-right: 1px solid #ccc;
@@ -106,7 +105,6 @@
             line-height: 14px;
         }
 
-        /* Colors based on Type name heuristics */
         .bg-festivo { background-color: #e74c3c; color: white; }
         .bg-no-lectivo { background-color: #ecf0f1; }
         .bg-evaluacion { background-color: #f1c40f; }
@@ -115,7 +113,6 @@
         .bg-inicio-fin { background-color: #2ecc71; color: white; }
         .bg-weekend { color: #aaa; background-color: #f9f9f9; }
         
-        /* Marked Dates Table */
         .marked-dates-table {
             width: 100%;
             border-collapse: collapse;

@@ -1,9 +1,9 @@
 <?php
 
-namespace App\Filament\Resources\Teachers;
+namespace App\Filament\Resources\Users;
 
-use App\Filament\Resources\Teachers\Pages\ManageTeachers;
-use App\Models\Teacher;
+use App\Filament\Resources\Users\Pages\ManageUsers;
+use App\Models\User;
 use BackedEnum;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteAction;
@@ -22,37 +22,55 @@ use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Filters\TrashedFilter;
 use Filament\Tables\Table;
+use Hash;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 
-class TeacherResource extends Resource
+class UserResource extends Resource
 {
-    protected static ?string $model = Teacher::class;
+    protected static ?string $model = User::class;
 
     protected static ?string $navigationLabel = 'Profesores';
 
     protected static ?string $pluralLabel = 'Listado de Profesores';
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedUserGroup;
-
     protected static ?string $slug = 'profesores';
-
-    protected static ?string $recordTitleAttribute = 'nombre';
 
     protected static string|\UnitEnum|null $navigationGroup = 'Administración';
 
     protected static ?int $navigationSort = 1;
 
+    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedUserGroup;
+
     public static function form(Schema $schema): Schema
     {
         return $schema
             ->components([
-                TextInput::make('nombre')
+                TextInput::make('name')
+                    ->label('Nombre')
                     ->placeholder('Nombre del profesor')
                     ->required(),
                 TextInput::make('email')
+                    ->label('Email')
                     ->placeholder('Email del profesor')
+                    ->label('Email address')
                     ->email()
+                    ->required(),
+                TextInput::make('password')
+                    ->label('Contraseña')
+                    ->placeholder('Contraseña del profesor')
+                    ->password()
+                    ->helperText('Déjalo vacío si no deseas cambiar la contraseña')
+                    ->required(fn (string $context): bool => $context === 'create') // Campo requerido unicamente en el crear
+                    ->visible(fn (string $context): bool => $context === 'create') // Campo visible unicamente en el crear
+                    ->dehydrateStateUsing(fn ($state) => filled($state) ? Hash::make($state) : null) // Si el campo esta vacio lo deja como null, si no lo hashea
+                    ->dehydrated(fn ($state) => filled($state)), // Si el campo esta vacio no se guarda
+                TextInput::make('phone')
+                    ->label('Teléfono')
+                    ->placeholder('+34 600 123 456')
+                    ->tel()
+                    ->maxLength(20)
+                    ->nullable()
                     ->default(null),
                 MultiSelect::make('subjects')
                     ->label('Asignaturas')
@@ -67,20 +85,23 @@ class TeacherResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
-            ->recordTitleAttribute('nombre')
+            ->recordTitleAttribute('name')
             ->columns([
-                TextColumn::make('nombre')
+                TextColumn::make('name')
+                    ->label('Nombre')
                     ->searchable(),
                 TextColumn::make('email')
-                    ->label('Email address')
+                    ->label('Email')
                     ->searchable(),
-                TextColumn::make('telefono')
+                TextColumn::make('phone')
+                    ->label('Teléfono')
                     ->searchable()
                     ->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('subjects.nombre')
                     ->label('Asignaturas')
                     ->badge(),
                 TextColumn::make('created_at')
+                    ->label('Fecha de creación')
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
@@ -118,7 +139,7 @@ class TeacherResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => ManageTeachers::route('/'),
+            'index' => ManageUsers::route('/'),
         ];
     }
 
@@ -138,5 +159,10 @@ class TeacherResource extends Resource
     public static function getNavigationBadgeTooltip(): ?string
     {
         return 'The number of teachers';
+    }
+
+    public static function canViewAny(): bool
+    {
+        return auth()->user()->hasRole('admin');
     }
 }

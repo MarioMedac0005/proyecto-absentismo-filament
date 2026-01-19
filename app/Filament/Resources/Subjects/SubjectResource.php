@@ -78,7 +78,7 @@ class SubjectResource extends Resource
                     ->badge(),
                 TextColumn::make('course.nombre')
                     ->sortable(),
-                TextColumn::make('teachers.nombre')
+                TextColumn::make('users.nombre')
                     ->label('Profesores')
                     ->badge()
                     ->toggleable(isToggledHiddenByDefault: true),
@@ -136,5 +136,10 @@ class SubjectResource extends Resource
     public static function getNavigationBadgeTooltip(): ?string
     {
         return 'The number of subjects';
+    }
+
+    public static function canViewAny(): bool
+    {
+        return auth()->user()->hasRole('admin');
     }
 }
