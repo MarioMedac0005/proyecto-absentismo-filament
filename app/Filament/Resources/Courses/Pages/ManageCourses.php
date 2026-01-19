@@ -1,0 +1,25 @@
+<?php
+
+namespace App\Filament\Resources\Courses\Pages;
+
+use App\Filament\Resources\Courses\CourseResource;
+use Filament\Actions\CreateAction;
+use Filament\Resources\Pages\ManageRecords;
+
+class ManageCourses extends ManageRecords
+{
+    protected static string $resource = CourseResource::class;
+
+    protected function getHeaderActions(): array
+    {
+        return [
+            CreateAction::make()
+            ->label('Crear Curso')
+            ->modalHeading('Crear Curso')
+            ->modalDescription('Introduce los datos del curso')
+            ->modalIcon('heroicon-o-book-open')
+            ->modalWidth('xl')
+            ,
+        ];
+    }
+}

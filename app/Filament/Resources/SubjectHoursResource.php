@@ -1,0 +1,110 @@
+<?php
+
+namespace App\Filament\Resources;
+
+use App\Filament\Resources\SubjectHoursResource\Pages;
+use App\Models\Subject;
+use Filament\Actions\Action;
+use Filament\Actions\ActionGroup;
+use Filament\Forms;
+use Filament\Resources\Resource;
+use Filament\Schemas\Schema;
+use Filament\Tables;
+use Filament\Tables\Table;
+
+class SubjectHoursResource extends Resource
+{
+    protected static ?string $model = Subject::class;
+
+    protected static ?string $slug = 'subject-hours';
+
+    protected static ?string $navigationLabel = 'Horas por Asignatura';
+
+    protected static ?string $pluralLabel = 'Horas por Asignatura';
+
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-eye';
+
+    protected static string|\UnitEnum|null $navigationGroup = 'Consultar';
+
+    protected static ?int $navigationSort = 6;
+
+    public static function form(Schema $schema): Schema
+    {
+        return $schema
+            ->components([
+                Forms\Components\TextInput::make('nombre')
+                    ->disabled(),
+                Forms\Components\TextInput::make('horas_semanales')
+                    ->disabled(),
+            ]);
+    }
+
+    public static function table(Table $table): Table
+    {
+        return $table
+            ->headerActions([
+                ActionGroup::make([
+                    Action::make('exportar')
+                        ->label('Exportar a Excel')
+                        ->icon('heroicon-o-arrow-down-tray')
+                        ->color('primary')
+                        ->action(fn () => dd('Implementar exportar a Excel')),
+                ])
+            ])
+            ->columns([
+                Tables\Columns\TextColumn::make('nombre')
+                    ->searchable()
+                    ->sortable(),
+                Tables\Columns\TextColumn::make('grado')
+                    ->badge()
+                    ->sortable(),
+                Tables\Columns\TextColumn::make('course.nombre')
+                    ->label('Curso')
+                    ->sortable(),
+                Tables\Columns\TextColumn::make('horas_semanales')
+                    ->numeric()
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
+                Tables\Columns\TextColumn::make('hours_t1')
+                    ->label('Horas 1º Tri')
+                    ->state(fn (Subject $record) => $record->calcularHorasPorTrimestre(1)),
+                Tables\Columns\TextColumn::make('hours_t2')
+                    ->label('Horas 2º Tri')
+                    ->state(fn (Subject $record) => $record->calcularHorasPorTrimestre(2)),
+                Tables\Columns\TextColumn::make('hours_t3')
+                    ->label('Horas 3º Tri')
+                    ->state(fn (Subject $record) => $record->calcularHorasPorTrimestre(3)),
+                Tables\Columns\TextColumn::make('created_at')
+                    ->dateTime()
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
+                Tables\Columns\TextColumn::make('updated_at')
+                    ->dateTime()
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
+            ])
+            ->filters([
+                //
+            ])
+            ->actions([
+                // View action only?
+            ])
+            ->bulkActions([
+                //
+            ]);
+    }
+
+    public static function getRelations(): array
+    {
+        return [
+            //
+        ];
+    }
+
+    public static function getPages(): array
+    {
+        return [
+            'index' => Pages\ListSubjectHours::route('/'),
+        ];
+    }
+}
