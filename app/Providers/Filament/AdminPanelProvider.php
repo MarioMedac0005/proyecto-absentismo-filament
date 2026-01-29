@@ -2,7 +2,8 @@
 
 namespace App\Providers\Filament;
 
-use App\Filament\Widgets\DownloadTemporalizationWidget;
+use App\Filament\Widgets\DownloadTemporalization;
+use App\Filament\Widgets\SettingsTemporalizationWidget;
 use Filament\Auth\Pages\PasswordReset\RequestPasswordReset;
 use Filament\Auth\Pages\PasswordReset\ResetPassword;
 use Filament\Http\Middleware\Authenticate;
@@ -49,8 +50,9 @@ class AdminPanelProvider extends PanelProvider
             ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\Filament\Widgets')
             ->widgets([
                 AccountWidget::class,
-                FilamentInfoWidget::class,
-                DownloadTemporalizationWidget::class,
+                // FilamentInfoWidget::class,
+                SettingsTemporalizationWidget::class,
+                DownloadTemporalization::class,
             ])
             ->middleware([
                 EncryptCookies::class,

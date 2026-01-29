@@ -13,7 +13,9 @@ use Filament\Actions\ForceDeleteAction;
 use Filament\Actions\ForceDeleteBulkAction;
 use Filament\Actions\RestoreAction;
 use Filament\Actions\RestoreBulkAction;
+use Filament\Forms\Components\ColorPicker;
 use Filament\Forms\Components\TextInput;
+use Filament\Tables\Columns\ColorColumn;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
@@ -46,10 +48,14 @@ class TypeResource extends Resource
         return $schema
             ->components([
                 TextInput::make('nombre')
+                    ->label('Nombre')
                     ->placeholder('Nombre del tipo de día')
                     ->required()
                     ->minLength(3)
-                    ->maxLength(100)
+                    ->maxLength(100),
+                ColorPicker::make('color')
+                    ->label('Color')
+                    ->required(),
             ]);
     }
 
@@ -59,16 +65,22 @@ class TypeResource extends Resource
             ->recordTitleAttribute('nombre')
             ->columns([
                 TextColumn::make('nombre')
+                    ->label('Nombre')
                     ->searchable(),
+                ColorColumn::make('color')
+                    ->label('Color'),
                 TextColumn::make('created_at')
+                    ->label('Fecha de creación')
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('updated_at')
+                    ->label('Fecha de actualización')
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('deleted_at')
+                    ->label('Fecha de eliminación')
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
@@ -77,16 +89,23 @@ class TypeResource extends Resource
                 TrashedFilter::make(),
             ])
             ->recordActions([
-                EditAction::make(),
-                DeleteAction::make(),
-                ForceDeleteAction::make(),
-                RestoreAction::make(),
+                EditAction::make()
+                    ->successNotificationTitle('Tipo de día editado correctamente'),
+                DeleteAction::make()
+                    ->successNotificationTitle('Tipo de día eliminado correctamente'),
+                ForceDeleteAction::make()
+                    ->successNotificationTitle('Tipo de día eliminado correctamente'),
+                RestoreAction::make()
+                    ->successNotificationTitle('Tipo de día restaurado correctamente'),
             ])
             ->toolbarActions([
                 BulkActionGroup::make([
-                    DeleteBulkAction::make(),
-                    ForceDeleteBulkAction::make(),
-                    RestoreBulkAction::make(),
+                    DeleteBulkAction::make()
+                        ->successNotificationTitle('Tipos de días eliminados correctamente'),
+                    ForceDeleteBulkAction::make()
+                        ->successNotificationTitle('Tipos de días eliminados correctamente'),
+                    RestoreBulkAction::make()
+                        ->successNotificationTitle('Tipos de días restaurados correctamente'),
                 ]),
             ]);
     }
@@ -113,7 +132,7 @@ class TypeResource extends Resource
 
     public static function getNavigationBadgeTooltip(): ?string
     {
-        return 'The number of types';
+        return 'Numero de tipos de días';
     }
 
     public static function canViewAny(): bool

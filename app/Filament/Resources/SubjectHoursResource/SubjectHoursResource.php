@@ -1,11 +1,9 @@
 <?php
 
-namespace App\Filament\Resources;
+namespace App\Filament\Resources\SubjectHoursResource;
 
-use App\Filament\Resources\SubjectHoursResource\Pages;
 use App\Models\Subject;
-use Filament\Actions\Action;
-use Filament\Actions\ActionGroup;
+use Auth;
 use Filament\Forms;
 use Illuminate\Database\Eloquent\Builder;
 use Filament\Resources\Resource;
@@ -19,13 +17,15 @@ class SubjectHoursResource extends Resource
 
     protected static ?string $slug = 'subject-hours';
 
-    protected static ?string $navigationLabel = 'Horas por Asignatura';
+    // Usa condicion depende del rol, la funcion se encuentra abajo
+    // protected static ?string $navigationLabel = 'Horas por Asignatura';
 
     protected static ?string $pluralLabel = 'Horas por Asignatura';
 
     protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-eye';
 
-    protected static string|\UnitEnum|null $navigationGroup = 'Consultar';
+    // Usa condicion depende del rol, la funcion se encuentra abajo
+    // protected static string|\UnitEnum|null $navigationGroup = 'Consultar';
 
     protected static ?int $navigationSort = 6;
 
@@ -124,5 +124,27 @@ class SubjectHoursResource extends Resource
     public static function getNavigationBadge(): ?string
     {
         return static::getEloquentQuery()->count();
+    }
+
+    public static function getNavigationGroup(): ?string
+    {
+        $user = Auth::user();
+
+        if ($user->hasRole('profesor')) {
+            return 'Profesorado';
+        }
+
+        return 'Consultar';
+    }
+
+    public static function getNavigationLabel(): string
+    {
+        $user = Auth::user();
+
+        if ($user->hasRole('profesor')) {
+            return 'Mis horas';
+        }
+
+        return 'Horas por Asignatura';
     }
 }

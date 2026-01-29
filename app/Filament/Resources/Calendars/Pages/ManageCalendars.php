@@ -21,42 +21,58 @@ class ManageCalendars extends ManageRecords
                 ->modalDescription('Introduce los datos del calendario')
                 ->modalIcon('heroicon-o-calendar')
                 ->modalWidth('xl')
-                /* ->using(function (array $data, string $model): Model {
-                    // Check if we are in 'range' mode
-                    if (($data['tipo_fecha'] ?? 'dia') === 'rango' && !empty($data['rango'])) {
-                        
-                        // Filament range picker usually returns "YYYY-MM-DD - YYYY-MM-DD"
-                        // We split the string to get start and end dates
-                        $dates = explode(' - ', $data['rango']);
-                        
-                        if (count($dates) === 2) {
-                            $startDate = Carbon::parse($dates[0]);
-                            $endDate = Carbon::parse($dates[1]);
-                            
-                            $record = null;
+                ->using(function (array $data, string $model): Model {
+                    $isRange = $data['is_range'] ?? false;
 
-                            // Loop through each day
-                            while ($startDate->lte($endDate)) {
-                                $recordData = $data;
-                                
-                                // Set the specific date for this record
-                                $recordData['fecha'] = $startDate->format('Y-m-d');
-                                
-                                // Create the record
-                                $record = $model::create($recordData);
-                                
-                                // Move to next day
-                                $startDate->addDay();
+                    if ($isRange) {
+                        $startDate = Carbon::parse($data['start_date']);
+                        $endDate = Carbon::parse($data['end_date']);
+                        $typeId = $data['type_id'];
+                        $description = $data['descripcion'] ?? null;
+                        
+                        $firstRecord = null;
+                        $currentDate = $startDate->copy();
+
+                        while ($currentDate->lte($endDate)) {
+                            // Usamos updateOrCreate para evitar duplicados y actualizar si ya existe
+                            $record = $model::updateOrCreate(
+                                ['fecha' => $currentDate->format('Y-m-d')],
+                                [
+                                    'type_id' => $typeId,
+                                    'descripcion' => $description,
+                                ]
+                            );
+
+                            if (! $firstRecord) {
+                                $firstRecord = $record;
                             }
 
-                            // Return the last created record to satisfy the method signature
-                            return $record;
+                            $currentDate->addDay();
                         }
+
+                        return $firstRecord;
                     }
 
-                    // Fallback for single day selection
-                    return $model::create($data);
-                }), */
+                    // Modo simple
+                    return $model::create([
+                        'fecha' => $data['fecha'],
+                        'type_id' => $data['type_id'],
+                        'descripcion' => $data['descripcion'] ?? null,
+                    ]);
+                })
+                ->successNotificationTitle('Calendario creado correctamente'),
+        ];
+    }
+    public function getSubheading(): ?string
+    {
+        return 'Gestión del calendario escolar, días festivos y eventos.';
+    }
+
+    public function getBreadcrumbs(): array
+    {
+        return [
+            $this->getResource()::getUrl() => $this->getResource()::getBreadcrumb(),
+            null => 'Listado',
         ];
     }
 }

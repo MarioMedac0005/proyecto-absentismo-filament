@@ -153,12 +153,30 @@
             margin-bottom: 10px;
         }
 
+        .legend-container {
+            margin-bottom: 10px;
+            text-align: center;
+        }
+        .legend-item {
+            display: inline-block;
+            margin-right: 15px;
+            font-size: 9px;
+        }
+        .legend-color {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border: 1px solid #000;
+            vertical-align: middle;
+            margin-right: 4px;
+        }
+
     </style>
 </head>
 <body>
 
     <div class="header-banner">
-        [PRES] Temporalización académica {{ date('Y') }}/{{ date('Y')+1 }}
+        [PRES] Temporalización académica {{ $course->inicio_curso && $course->fin_curso ? $course->inicio_curso . '/' . $course->fin_curso : date('Y') . '/' . (date('Y')+1) }}
     </div>
 
     <div class="container">
@@ -166,6 +184,17 @@
         <div class="column-left">
             <div class="main-title">{{ $course->nombre }}</div>
             <div class="sub-title">Calendario académico</div>
+
+            <div class="legend-container">
+                @foreach($types as $type)
+                    @if($type->color)
+                        <div class="legend-item">
+                            <span class="legend-color" style="background-color: {{ $type->color }};"></span>
+                            {{ $type->nombre }}
+                        </div>
+                    @endif
+                @endforeach
+            </div>
 
             @php
                 $bloques = array_chunk($meses, 3, true);
@@ -195,6 +224,8 @@
                                             @foreach($semana as $dia)
                                                 @php
                                                     $claseCelda = '';
+                                                    $estiloCelda = '';
+
                                                     if ($dia) {
                                                         if ($dia['diaSemana'] >= 6) {
                                                             $claseCelda = 'bg-weekend';
@@ -202,18 +233,23 @@
                                                         
                                                         // Lógica de colores basada en el tipo de evento
                                                         foreach ($dia['eventos'] as $evento) {
-                                                            $nombreTipo = strtolower($evento->type->nombre ?? '');
-                                                             if (str_contains($nombreTipo, 'festivo')) $claseCelda = 'bg-festivo';
-                                                             elseif (str_contains($nombreTipo, 'no lectivo')) $claseCelda = 'bg-no-lectivo';
-                                                             elseif (str_contains($nombreTipo, 'evaluacion') || str_contains($nombreTipo, 'evaluación')) $claseCelda = 'bg-evaluacion';
-                                                             elseif (str_contains($nombreTipo, 'recup')) $claseCelda = 'bg-recuperacion';
-                                                             elseif (str_contains($nombreTipo, 'entrega') || str_contains($nombreTipo, 'boletin')) $claseCelda = 'bg-entrega';
-                                                             elseif (str_contains($nombreTipo, 'comienzo') || str_contains($nombreTipo, 'fin')) $claseCelda = 'bg-inicio-fin';
+                                                            if ($evento->type && $evento->type->color) {
+                                                                $estiloCelda = 'background-color: ' . $evento->type->color . '; color: white;';
+                                                            } else {
+                                                                // Fallback si no hay color definido (mantener logica anterior o default)
+                                                                 $nombreTipo = strtolower($evento->type->nombre ?? '');
+                                                                 if (str_contains($nombreTipo, 'festivo')) $claseCelda = 'bg-festivo';
+                                                                 elseif (str_contains($nombreTipo, 'no lectivo')) $claseCelda = 'bg-no-lectivo';
+                                                                 elseif (str_contains($nombreTipo, 'evaluacion') || str_contains($nombreTipo, 'evaluación')) $claseCelda = 'bg-evaluacion';
+                                                                 elseif (str_contains($nombreTipo, 'recup')) $claseCelda = 'bg-recuperacion';
+                                                                 elseif (str_contains($nombreTipo, 'entrega') || str_contains($nombreTipo, 'boletin')) $claseCelda = 'bg-entrega';
+                                                                 elseif (str_contains($nombreTipo, 'comienzo') || str_contains($nombreTipo, 'fin')) $claseCelda = 'bg-inicio-fin';
+                                                            }
                                                         }
                                                     }
                                                 @endphp
                                                 
-                                                <td class="{{ $claseCelda }}">
+                                                <td class="{{ $claseCelda }}" style="{{ $estiloCelda }}">
                                                     @if($dia)
                                                         <span class="day_num">{{ $dia['dia'] }}</span>
                                                     @endif

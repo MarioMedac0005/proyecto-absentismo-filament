@@ -22,4 +22,16 @@ class ManageSubjects extends ManageRecords
             ,
         ];
     }
+    public function getSubheading(): ?string
+    {
+        return 'Gestión de las asignaturas, sus horas semanales y grados asociados.';
+    }
+
+    public function getBreadcrumbs(): array
+    {
+        return [
+            $this->getResource()::getUrl() => $this->getResource()::getBreadcrumb(),
+            null => 'Listado',
+        ];
+    }
 }

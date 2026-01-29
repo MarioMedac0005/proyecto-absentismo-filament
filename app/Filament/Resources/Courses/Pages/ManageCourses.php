@@ -22,4 +22,16 @@ class ManageCourses extends ManageRecords
             ,
         ];
     }
+    public function getSubheading(): ?string
+    {
+        return 'Gestión de los cursos académicos y configuración de trimestres.';
+    }
+
+    public function getBreadcrumbs(): array
+    {
+        return [
+            $this->getResource()::getUrl() => $this->getResource()::getBreadcrumb(),
+            null => 'Listado',
+        ];
+    }
 }

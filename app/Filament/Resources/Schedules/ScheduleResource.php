@@ -5,6 +5,7 @@ namespace App\Filament\Resources\Schedules;
 use App\Filament\Resources\Schedules\Pages\ManageSchedules;
 use App\Models\Schedule;
 use App\Models\Subject;
+use Auth;
 use BackedEnum;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteAction;
@@ -22,6 +23,7 @@ use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\TrashedFilter;
 use Filament\Tables\Table;
+use Filament\Tables\Filters\SelectFilter;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 
@@ -39,7 +41,8 @@ class ScheduleResource extends Resource
 
     protected static ?string $recordTitleAttribute = 'dia_semana';
 
-    protected static string|\UnitEnum|null $navigationGroup = 'Administración';
+    // Usa condicion depende del rol, la funcion se encuentra abajo
+    // protected static string|\UnitEnum|null $navigationGroup = 'Administración';
 
     protected static ?int $navigationSort = 5;
 
@@ -48,6 +51,7 @@ class ScheduleResource extends Resource
         return $schema
             ->components([
                 Select::make('dia_semana')
+                    ->label('Día de la semana')
                     ->options([
                         'lunes' => 'Lunes',
                         'martes' => 'Martes',
@@ -58,12 +62,16 @@ class ScheduleResource extends Resource
                     ->placeholder('Día de la semana')
                     ->required(),
                 TextInput::make('horas')
+                    ->label('Horas')
                     ->placeholder('Horas')
                     ->required()
                     ->numeric(),
                 Select::make('subject_id')
+                    ->label('Asignatura')
                     ->placeholder('Asignatura')
                     ->required()
+                    ->searchable()
+                    ->preload()
                     ->options(function () {
                         if (auth()->user()->hasRole('profesor')) {
                             return auth()->user()->subjects()->pluck('subjects.nombre', 'subjects.id');
@@ -79,39 +87,64 @@ class ScheduleResource extends Resource
             ->recordTitleAttribute('dia_semana')
             ->columns([
                 TextColumn::make('dia_semana')
+                    ->label('Día de la semana')
                     ->badge(),
                 TextColumn::make('horas')
+                    ->label('Horas')
                     ->numeric()
                     ->sortable(),
                 TextColumn::make('subject.nombre')
+                    ->label('Asignatura')
                     ->sortable(),
                 TextColumn::make('created_at')
+                    ->label('Fecha de creación')
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('updated_at')
+                    ->label('Fecha de actualización')
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('deleted_at')
+                    ->label('Fecha de eliminación')
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
                 TrashedFilter::make(),
+                SelectFilter::make('dia_semana')
+                    ->label('Día de la semana')
+                    ->options([
+                        'lunes' => 'Lunes',
+                        'martes' => 'Martes',
+                        'miercoles' => 'Miercoles',
+                        'jueves' => 'Jueves',
+                        'viernes' => 'Viernes',
+                    ]),
+                SelectFilter::make('subject_id')
+                    ->label('Asignatura')
+                    ->relationship('subject', 'nombre'),
             ])
             ->recordActions([
-                EditAction::make(),
-                DeleteAction::make(),
-                ForceDeleteAction::make(),
-                RestoreAction::make(),
+                EditAction::make()
+                    ->successNotificationTitle('Horario editado correctamente'),
+                DeleteAction::make()
+                    ->successNotificationTitle('Horario eliminado correctamente'),
+                ForceDeleteAction::make()
+                    ->successNotificationTitle('Horario eliminado correctamente'),
+                RestoreAction::make()
+                    ->successNotificationTitle('Horario restaurado correctamente'),
             ])
             ->toolbarActions([
                 BulkActionGroup::make([
-                    DeleteBulkAction::make(),
-                    ForceDeleteBulkAction::make(),
-                    RestoreBulkAction::make(),
+                    DeleteBulkAction::make()
+                        ->successNotificationTitle('Horarios eliminados correctamente'),
+                    ForceDeleteBulkAction::make()
+                        ->successNotificationTitle('Horarios eliminados correctamente'),
+                    RestoreBulkAction::make()
+                        ->successNotificationTitle('Horarios restaurados correctamente'),
                 ]),
             ]);
     }
@@ -143,7 +176,7 @@ class ScheduleResource extends Resource
 
     public static function getNavigationBadgeTooltip(): ?string
     {
-        return 'The number of schedules';
+        return 'Numero de horarios';
     }
 
     public static function getEloquentQuery(): Builder
@@ -157,5 +190,16 @@ class ScheduleResource extends Resource
         }
 
         return $query;
+    }
+
+    public static function getNavigationGroup(): ?string
+    {
+        $user = Auth::user();
+
+        if ($user->hasRole('profesor')) {
+            return 'Profesorado';
+        }
+
+        return 'Administración';
     }
 }

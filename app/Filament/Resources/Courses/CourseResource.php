@@ -5,6 +5,7 @@ namespace App\Filament\Resources\Courses;
 use App\Filament\Resources\Courses\Pages\ManageCourses;
 use App\Models\Course;
 use BackedEnum;
+use Carbon\Carbon;
 use Filament\Actions\Action;
 use Filament\Actions\ActionGroup;
 use Filament\Actions\BulkActionGroup;
@@ -17,8 +18,6 @@ use Filament\Actions\RestoreAction;
 use Filament\Actions\RestoreBulkAction;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
-use Filament\Forms\Components\Section;;
-use Filament\Forms\Components\Grid;
 use Filament\Forms\Components\DatePicker;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
@@ -52,13 +51,35 @@ class CourseResource extends Resource
     {
         return $schema
             ->components([
-                TextInput::make('nombre')
-                    ->placeholder('Nombre del curso')
-                    ->required(),
-                Select::make('grado')
-                    ->options(['primero' => 'Primero', 'segundo' => 'Segundo'])
-                    ->required()
-                    ->placeholder('Grado del curso'),
+                \Filament\Schemas\Components\Section::make('Información General')
+                    ->icon('heroicon-o-information-circle')
+                    ->schema([
+                        TextInput::make('nombre')
+                            ->placeholder('Nombre del curso')
+                            ->required(),
+                        Select::make('grado')
+                            ->options(['primero' => 'Primero', 'segundo' => 'Segundo'])
+                            ->required()
+                            ->placeholder('Grado del curso'),
+                    ])->columns(1),
+
+                \Filament\Schemas\Components\Section::make('Fechas del Curso')
+                    ->icon('heroicon-o-calendar')
+                    ->schema([
+                        TextInput::make('inicio_curso')
+                            ->label('Año Inicio')
+                            ->numeric()
+                            ->minValue(2000)
+                            ->maxValue(2100)
+                            ->required(),
+                        TextInput::make('fin_curso')
+                            ->label('Año Fin')
+                            ->numeric()
+                            ->minValue(2000)
+                            ->maxValue(2100)
+                            ->required(),
+                    ])->columns(1),
+
                 \Filament\Schemas\Components\Tabs::make('Trimestres')
                     ->tabs([
                         \Filament\Schemas\Components\Tabs\Tab::make('1º Trimestre')
@@ -136,6 +157,11 @@ class CourseResource extends Resource
             ->columns([
                 TextColumn::make('nombre')
                     ->searchable(),
+                TextColumn::make('curso_escolar_virtual')
+                    ->label('Curso Escolar')
+                    ->getStateUsing(fn (Course $record) => $record->inicio_curso && $record->fin_curso 
+                        ? $record->inicio_curso . '/' . $record->fin_curso
+                        : 'N/A'),
                 TextColumn::make('grado')
                     ->badge(),
                 TextColumn::make('trimestre_1_inicio')
@@ -183,18 +209,28 @@ class CourseResource extends Resource
                         'segundo' => 'Segundo',
                     ])
                     ->label('Grado'),
+                SelectFilter::make('inicio_curso')
+                    ->label('Año de inicio')
+                    ->options(fn () => Course::distinct()->pluck('inicio_curso', 'inicio_curso')->sort()->toArray()),
             ])
             ->recordActions([
-                EditAction::make(),
-                DeleteAction::make(),
-                ForceDeleteAction::make(),
-                RestoreAction::make(),
+                EditAction::make()
+                    ->successNotificationTitle('Curso editado correctamente'),
+                DeleteAction::make()
+                    ->successNotificationTitle('Curso eliminado correctamente'),
+                ForceDeleteAction::make()
+                    ->successNotificationTitle('Curso eliminado correctamente'),
+                RestoreAction::make()
+                    ->successNotificationTitle('Curso restaurado correctamente'),
             ])
             ->toolbarActions([
                 BulkActionGroup::make([
-                    DeleteBulkAction::make(),
-                    ForceDeleteBulkAction::make(),
-                    RestoreBulkAction::make(),
+                    DeleteBulkAction::make()
+                        ->successNotificationTitle('Cursos eliminados correctamente'),
+                    ForceDeleteBulkAction::make()
+                        ->successNotificationTitle('Cursos eliminados correctamente'),
+                    RestoreBulkAction::make()
+                        ->successNotificationTitle('Cursos restaurados correctamente'),
                 ]),
             ]);
     }
@@ -221,7 +257,7 @@ class CourseResource extends Resource
 
     public static function getNavigationBadgeTooltip(): ?string
     {
-        return 'The number of courses';
+        return 'Numero de cursos';
     }
 
     public static function canViewAny(): bool

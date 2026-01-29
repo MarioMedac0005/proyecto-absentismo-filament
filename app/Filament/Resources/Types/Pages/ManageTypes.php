@@ -16,10 +16,22 @@ class ManageTypes extends ManageRecords
             CreateAction::make()
             ->label('Crear Tipo')
             ->modalHeading('Crear Tipo')
-            ->modalDescription('Introduce los datos del tipo')
+            ->modalDescription('Unicamente registre dias no lectivos como (festivo, vacaciones, periodo de practicas, etc). Por defecto, los dias no registrados se consideran lectivos.')
             ->modalIcon('heroicon-o-book-open')
             ->modalWidth('xl')
             ,
+        ];
+    }
+    public function getSubheading(): ?string
+    {
+        return 'Gestión de los tipos de días (lectivos, festivos, vacaciones...).';
+    }
+
+    public function getBreadcrumbs(): array
+    {
+        return [
+            $this->getResource()::getUrl() => $this->getResource()::getBreadcrumb(),
+            null => 'Listado',
         ];
     }
 }

@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\Calendar;
 use App\Models\Course;
+use App\Models\Type;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\CarbonPeriod;
 
@@ -123,11 +124,12 @@ class TemporalizationCalendar
             'course' => $course,
             'meses' => $datos['meses'],
             'fechasMarcadas' => $datos['fechasMarcadas'],
+            'types' => Type::all(),
         ])->setPaper('a4', 'landscape');
 
         return response()->streamDownload(
             fn () => print($pdf->output()),
-            'temporalizacion-' . $course->slug . '.pdf'
+            'temporalizacion - ' . $course->nombre . '.pdf'
         );
     }
 }

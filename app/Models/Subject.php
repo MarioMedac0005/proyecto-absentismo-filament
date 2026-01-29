@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Carbon\Carbon;
 use App\Models\Calendar;
+use Carbon\CarbonPeriod;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -33,10 +34,9 @@ class Subject extends Model
         return $this->hasMany(Schedule::class);
     }
 
-    public function calcularHorasPorTrimestre(int $trimestre = null): int
+    public function calcularHorasPorTrimestre(?int $trimestre): int
     {
         $curso = $this->course;
-
         if (!$curso) {
             return 0;
         }
@@ -51,15 +51,17 @@ class Subject extends Model
         $inicio = Carbon::parse($inicio);
         $fin = Carbon::parse($fin);
 
-        // Obtener días festivos y vacaciones en el rango
+        // Fechas no lectivas (festivos/vacaciones)
+        // Usamos flip() para búsqueda O(1)
         $diasNoLectivos = Calendar::whereBetween('fecha', [$inicio, $fin])
             ->pluck('fecha')
-            ->map(fn($fecha) => Carbon::parse($fecha)->format('Y-m-d'))
-            ->toArray();
+            ->map(fn ($f) => Carbon::parse($f)->toDateString())
+            ->flip();
 
-        // Obtener horario de la asignatura agrupado por día de la semana
-        $horarioPorDia = $this->schedules->pluck('horas', 'dia_semana')->toArray();
+        // Horas por día de la semana
+        $horarioPorDia = $this->schedules->pluck('horas', 'dia_semana');
 
+        // Mapa explícito para evitar problemas con tildes (miércoles vs miercoles)
         $mapaDias = [
             1 => 'lunes',
             2 => 'martes',
@@ -70,25 +72,13 @@ class Subject extends Model
             7 => 'domingo',
         ];
 
-        $horasTotales = 0;
-
-        // Iterar día a día
-        for ($date = $inicio->copy(); $date->lte($fin); $date->addDay()) {
-            $fechaString = $date->format('Y-m-d');
-
-            // Si es festivo o vacaciones, saltar
-            if (in_array($fechaString, $diasNoLectivos)) {
-                continue;
-            }
-
-            $diaSemanaNum = $date->dayOfWeekIso;
-            $diaSemanaNombre = $mapaDias[$diaSemanaNum] ?? '';
-
-            if (isset($horarioPorDia[$diaSemanaNombre])) {
-                $horasTotales += $horarioPorDia[$diaSemanaNombre];
-            }
-        }
-
-        return $horasTotales;
+        // Convertimos CarbonPeriod a Collection para usar reject/sum
+        return collect(CarbonPeriod::create($inicio, $fin))
+            ->reject(fn ($date) => $diasNoLectivos->has($date->toDateString()))
+            ->sum(function ($date) use ($horarioPorDia, $mapaDias) {
+                // Usamos dayOfWeekIso (1=Lunes, 7=Domingo) para mapear al string sin tildes de la BD
+                $diaKey = $mapaDias[$date->dayOfWeekIso] ?? '';
+                return $horarioPorDia[$diaKey] ?? 0;
+            });
     }
 }

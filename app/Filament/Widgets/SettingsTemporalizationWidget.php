@@ -6,9 +6,9 @@ use App\Models\TemporalizationSetting;
 use Filament\Notifications\Notification;
 use Filament\Widgets\Widget;
 
-class DownloadTemporalizationWidget extends Widget
+class SettingsTemporalizationWidget extends Widget
 {
-    protected string $view = 'filament.widgets.download-temporalization-widget';
+    protected string $view = 'filament.widgets.settings-temporalization-widget';
 
     public $enabled = false;
 

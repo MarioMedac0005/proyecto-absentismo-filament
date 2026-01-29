@@ -53,14 +53,13 @@ class UserResource extends Resource
                 TextInput::make('email')
                     ->label('Email')
                     ->placeholder('Email del profesor')
-                    ->label('Email address')
                     ->email()
                     ->required(),
                 TextInput::make('password')
                     ->label('Contraseña')
                     ->placeholder('Contraseña del profesor')
                     ->password()
-                    ->helperText('Déjalo vacío si no deseas cambiar la contraseña')
+                    ->helperText(fn ($state) => filled($state) ? 'Dejar en blanco para no cambiar la contraseña': '')
                     ->required(fn (string $context): bool => $context === 'create') // Campo requerido unicamente en el crear
                     ->visible(fn (string $context): bool => $context === 'create') // Campo visible unicamente en el crear
                     ->dehydrateStateUsing(fn ($state) => filled($state) ? Hash::make($state) : null) // Si el campo esta vacio lo deja como null, si no lo hashea
@@ -69,7 +68,9 @@ class UserResource extends Resource
                     ->label('Teléfono')
                     ->placeholder('+34 600 123 456')
                     ->tel()
-                    ->maxLength(20)
+                    ->regex('/^[0-9+\-\s]+$/')
+                    ->minLength(8)
+                    ->maxLength(15)
                     ->nullable()
                     ->default(null),
                 MultiSelect::make('subjects')
@@ -106,10 +107,12 @@ class UserResource extends Resource
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('updated_at')
+                    ->label('Fecha de actualización')
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('deleted_at')
+                    ->label('Fecha de eliminacion')
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
@@ -120,18 +123,29 @@ class UserResource extends Resource
                     ->relationship('subjects', 'nombre')
                     ->multiple()
                     ->label('Asignaturas'),
+                SelectFilter::make('roles')
+                    ->relationship('roles', 'name')
+                    ->label('Rol'),
             ])
             ->recordActions([
-                EditAction::make(),
-                DeleteAction::make(),
-                ForceDeleteAction::make(),
-                RestoreAction::make(),
+                EditAction::make()
+                    ->successNotificationTitle('Profesor editado correctamente')
+                    ->modalHeading('Editar profesor'),
+                DeleteAction::make()
+                    ->successNotificationTitle('Profesor eliminado correctamente'),
+                ForceDeleteAction::make()
+                    ->successNotificationTitle('Profesor eliminado correctamente'),
+                RestoreAction::make()
+                    ->successNotificationTitle('Profesor restaurado correctamente'),
             ])
             ->toolbarActions([
                 BulkActionGroup::make([
-                    DeleteBulkAction::make(),
-                    ForceDeleteBulkAction::make(),
-                    RestoreBulkAction::make(),
+                    DeleteBulkAction::make()
+                        ->successNotificationTitle('Profesores eliminados correctamente'),
+                    ForceDeleteBulkAction::make()
+                        ->successNotificationTitle('Profesores eliminados correctamente'),
+                    RestoreBulkAction::make()
+                        ->successNotificationTitle('Profesores restaurados correctamente'),
                 ]),
             ]);
     }
@@ -158,7 +172,7 @@ class UserResource extends Resource
 
     public static function getNavigationBadgeTooltip(): ?string
     {
-        return 'The number of teachers';
+        return 'Numero de profesores';
     }
 
     public static function canViewAny(): bool

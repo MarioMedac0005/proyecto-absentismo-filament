@@ -13,7 +13,22 @@ class ManageUsers extends ManageRecords
     protected function getHeaderActions(): array
     {
         return [
-            CreateAction::make(),
+            CreateAction::make()
+                ->label('Crear profesor')
+                ->modalHeading('Crear profesor'),
+        ];
+    }
+
+    public function getSubheading(): ?string
+    {
+        return 'Gestión de los profesores de la aplicación.';
+    }
+
+    public function getBreadcrumbs(): array
+    {
+        return [
+            $this->getResource()::getUrl() => $this->getResource()::getBreadcrumb(),
+            null => 'Listado',
         ];
     }
 }

@@ -11,6 +11,7 @@ class Type extends Model
     use HasFactory, SoftDeletes;
     protected $fillable = [
         'nombre',
+        'color',
     ];
 
     public function calendars()

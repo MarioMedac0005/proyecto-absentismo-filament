@@ -21,6 +21,7 @@ use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\TrashedFilter;
 use Filament\Tables\Table;
+use Filament\Tables\Filters\SelectFilter;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 
@@ -58,8 +59,11 @@ class SubjectResource extends Resource
                     ->options(['primero' => 'Primero', 'segundo' => 'Segundo'])
                     ->required(),
                 Select::make('course_id')
+                    ->label('Curso')
                     ->placeholder('Curso')
                     ->relationship('course', 'nombre')
+                    ->searchable()
+                    ->preload()
                     ->required(),
             ]);
     }
@@ -77,38 +81,58 @@ class SubjectResource extends Resource
                 TextColumn::make('grado')
                     ->badge(),
                 TextColumn::make('course.nombre')
+                    ->label('Curso')
                     ->sortable(),
                 TextColumn::make('users.nombre')
                     ->label('Profesores')
                     ->badge()
                     ->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('created_at')
+                    ->label('Fecha de creación')
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('updated_at')
+                    ->label('Fecha de actualización')
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('deleted_at')
+                    ->label('Fecha de eliminación')
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
                 TrashedFilter::make(),
+                SelectFilter::make('course_id')
+                    ->label('Curso')
+                    ->relationship('course', 'nombre'),
+                SelectFilter::make('grado')
+                    ->label('Grado')
+                    ->options([
+                        'primero' => 'Primero',
+                        'segundo' => 'Segundo',
+                    ]),
             ])
             ->recordActions([
-                EditAction::make(),
-                DeleteAction::make(),
-                ForceDeleteAction::make(),
-                RestoreAction::make(),
+                EditAction::make()
+                    ->successNotificationTitle('Asignatura editada correctamente'),
+                DeleteAction::make()
+                    ->successNotificationTitle('Asignatura eliminada correctamente'),
+                ForceDeleteAction::make()
+                    ->successNotificationTitle('Asignatura eliminada correctamente'),
+                RestoreAction::make()
+                    ->successNotificationTitle('Asignatura restaurada correctamente'),
             ])
             ->toolbarActions([
                 BulkActionGroup::make([
-                    DeleteBulkAction::make(),
-                    ForceDeleteBulkAction::make(),
-                    RestoreBulkAction::make(),
+                    DeleteBulkAction::make()
+                        ->successNotificationTitle('Asignaturas eliminadas correctamente'),
+                    ForceDeleteBulkAction::make()
+                        ->successNotificationTitle('Asignaturas eliminadas correctamente'),
+                    RestoreBulkAction::make()
+                        ->successNotificationTitle('Asignaturas restauradas correctamente'),
                 ]),
             ]);
     }
@@ -135,7 +159,7 @@ class SubjectResource extends Resource
 
     public static function getNavigationBadgeTooltip(): ?string
     {
-        return 'The number of subjects';
+        return 'Numero de asignaturas';
     }
 
     public static function canViewAny(): bool

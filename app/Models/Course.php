@@ -11,6 +11,8 @@ class Course extends Model
     use HasFactory, SoftDeletes;
     protected $fillable = [
         'nombre',
+        'inicio_curso',
+        'fin_curso',
         'grado',
         'trimestre_1_inicio',
         'trimestre_1_fin',
@@ -21,6 +23,8 @@ class Course extends Model
     ];
 
     protected $casts = [
+        'inicio_curso' => 'integer',
+        'fin_curso' => 'integer',
         'trimestre_1_inicio' => 'date',
         'trimestre_1_fin' => 'date',
         'trimestre_2_inicio' => 'date',

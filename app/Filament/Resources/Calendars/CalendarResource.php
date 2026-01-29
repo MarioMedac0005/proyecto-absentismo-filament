@@ -14,9 +14,10 @@ use Filament\Actions\ForceDeleteBulkAction;
 use Filament\Actions\RestoreAction;
 use Filament\Actions\RestoreBulkAction;
 use Filament\Forms\Components\DatePicker;
-use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\ToggleButtons;
+use Filament\Schemas\Components\Group;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
@@ -49,32 +50,64 @@ class CalendarResource extends Resource
     {
         return $schema
             ->components([
-                Select::make('tipo_fecha')
-                    ->label('Tipo de selección de fecha')
-                    ->options([
-                        'dia' => 'Un solo día',
-                        'rango' => 'Rango de días'
-                    ])
-                    ->reactive(),
+                Group::make([
+                    ToggleButtons::make('is_range')
+                        ->label('Modo de creación')
+                        ->options([
+                            0 => 'Un solo día',
+                            1 => 'Rango de fechas',
+                        ])
+                        ->icons([
+                            0 => 'heroicon-m-calendar',
+                            1 => 'heroicon-m-calendar-days',
+                        ])
+                        ->colors([
+                            0 => 'primary',
+                            1 => 'warning',
+                        ])
+                        ->grouped()
+                        ->default(0)
+                        ->reactive()
+                        ->visible(fn ($operation) => $operation === 'create'),
+                ])
+                ->columnSpanFull()
+                ->extraAttributes(['class' => 'flex justify-center w-full']),
+
                 DatePicker::make('fecha')
-                    ->required()
+                    ->label('Fecha')
+                    ->placeholder('Selecciona una fecha')
+                    ->required(fn ($get, $operation) => $operation === 'create' && ! $get('is_range'))
+                    ->visible(fn ($get, $operation) => $operation === 'edit' || ! $get('is_range'))
                     ->native(false)
-                    ->closeOnDateSelection()
-                    ->placeholder('Fecha del día')
-                    ->visible(fn (callable $get) => $get('tipo_fecha') === 'dia'),
-                DatePicker::make('rango')
-                    ->required()
+                    ->closeOnDateSelection(),
+                
+                DatePicker::make('start_date')
+                    ->label('Fecha Inicio')
+                    ->placeholder('Selecciona una fecha')
+                    ->required(fn ($get, $operation) => $operation === 'create' && $get('is_range'))
+                    ->visible(fn ($get, $operation) => $operation === 'create' && $get('is_range'))
                     ->native(false)
-                    ->closeOnDateSelection()
-                    ->placeholder('Fecha del día')
-                    ->visible(fn (callable $get) => $get('tipo_fecha') === 'rango'),
+                    ->closeOnDateSelection(),
+
+                DatePicker::make('end_date')
+                    ->label('Fecha Fin')
+                    ->placeholder('Selecciona una fecha')
+                    ->required(fn ($get, $operation) => $operation === 'create' && $get('is_range'))
+                    ->visible(fn ($get, $operation) => $operation === 'create' && $get('is_range'))
+                    ->afterOrEqual('start_date')
+                    ->native(false)
+                    ->closeOnDateSelection(),
+
                 TextInput::make('descripcion')
+                    ->label('Descripción')
                     ->placeholder('Descripción del día')
                     ->default(null),
+
                 Select::make('type_id')
                     ->relationship('type', 'nombre')
                     ->required()
-                    ->placeholder('Tipo de día')
+                    ->label('Tipo de día')
+                    ->placeholder('Selecciona un tipo')
                     ->searchable()
                     ->preload(),
             ]);
@@ -86,21 +119,27 @@ class CalendarResource extends Resource
             ->recordTitleAttribute('fecha')
             ->columns([
                 TextColumn::make('fecha')
+                    ->label('Fecha')
                     ->date()
                     ->sortable(),
                 TextColumn::make('descripcion')
+                    ->label('Descripción')
                     ->searchable(),
                 TextColumn::make('type.nombre')
+                    ->label('Tipo')
                     ->sortable(),
                 TextColumn::make('created_at')
+                    ->label('Fecha de creación')
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('updated_at')
+                    ->label('Fecha de actualización')
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('deleted_at')
+                    ->label('Fecha de eliminación')
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
@@ -113,16 +152,23 @@ class CalendarResource extends Resource
                     ->multiple()
             ])
             ->recordActions([
-                EditAction::make(),
-                DeleteAction::make(),
-                ForceDeleteAction::make(),
-                RestoreAction::make(),
+                EditAction::make()
+                    ->successNotificationTitle('Calendario actualizado correctamente'),
+                DeleteAction::make()
+                    ->successNotificationTitle('Calendario eliminado correctamente'),
+                ForceDeleteAction::make()
+                    ->successNotificationTitle('Calendario eliminado definitivamente'),
+                RestoreAction::make()
+                    ->successNotificationTitle('Calendario restaurado correctamente'),
             ])
             ->toolbarActions([
                 BulkActionGroup::make([
-                    DeleteBulkAction::make(),
-                    ForceDeleteBulkAction::make(),
-                    RestoreBulkAction::make(),
+                    DeleteBulkAction::make()
+                        ->successNotificationTitle('Calendarios eliminados correctamente'),
+                    ForceDeleteBulkAction::make()
+                        ->successNotificationTitle('Calendarios eliminados definitivamente'),
+                    RestoreBulkAction::make()
+                        ->successNotificationTitle('Calendarios restaurados correctamente'),
                 ]),
             ]);
     }
@@ -149,7 +195,7 @@ class CalendarResource extends Resource
 
     public static function getNavigationBadgeTooltip(): ?string
     {
-        return 'The number of calendars';
+        return 'Numero de calendarios';
     }
 
     public static function canViewAny(): bool

@@ -22,4 +22,16 @@ class ManageSchedules extends ManageRecords
             ,
         ];
     }
+    public function getSubheading(): ?string
+    {
+        return 'Gestión de los horarios y distribución de horas por día.';
+    }
+
+    public function getBreadcrumbs(): array
+    {
+        return [
+            $this->getResource()::getUrl() => $this->getResource()::getBreadcrumb(),
+            null => 'Listado',
+        ];
+    }
 }
