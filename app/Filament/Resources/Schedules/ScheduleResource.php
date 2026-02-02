@@ -135,7 +135,7 @@ class ScheduleResource extends Resource
                     ]),
                 SelectFilter::make('subject_id')
                     ->label('Asignatura')
-                    ->relationship('subject', 'nombre'),
+                    ->options(\App\Models\Subject::whereNotNull('nombre')->pluck('nombre', 'id')),
             ])
             ->recordActions([
                 EditAction::make()

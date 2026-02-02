@@ -123,9 +123,9 @@ class UserResource extends Resource
             ->filters([
                 TrashedFilter::make(),
                 SelectFilter::make('asignaturas')
-                    ->relationship('subjects', 'nombre')
                     ->multiple()
-                    ->label('Asignaturas'),
+                    ->label('Asignaturas')
+                    ->options(\App\Models\Subject::whereNotNull('nombre')->pluck('nombre', 'id')),
                 SelectFilter::make('roles')
                     ->relationship('roles', 'name')
                     ->label('Rol'),

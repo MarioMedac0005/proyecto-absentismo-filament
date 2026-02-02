@@ -107,7 +107,7 @@ class SubjectResource extends Resource
                 TrashedFilter::make(),
                 SelectFilter::make('course_id')
                     ->label('Curso')
-                    ->relationship('course', 'nombre'),
+                    ->options(\App\Models\Course::whereNotNull('nombre')->pluck('nombre', 'id')),
                 SelectFilter::make('grado')
                     ->label('Grado')
                     ->options([
