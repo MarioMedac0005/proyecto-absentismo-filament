@@ -25,5 +25,19 @@ class DatabaseSeeder extends Seeder
     {
         $this->call(RoleSeeder::class);
         $this->call(RealDataSeeder::class);
+
+        $admin = User::factory()->create([
+            'name' => 'admin',
+            'email' => 'admin@gmail.com',
+            'password' => \Illuminate\Support\Facades\Hash::make('Usuario123'),
+        ]);
+        $admin->assignRole('admin');
+
+        $profesor = User::factory()->create([
+            'name' => 'profesor',
+            'email' => 'profesor@gmail.com',
+            'password' => \Illuminate\Support\Facades\Hash::make('Usuario123'),
+        ]);
+        $profesor->assignRole('profesor');
     }
 }
