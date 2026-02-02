@@ -77,7 +77,10 @@ class UserResource extends Resource
                     ->label('Asignaturas')
                     ->placeholder('Asignaturas')
                     ->relationship('subjects', 'nombre', fn (Builder $query) => $query->with('course'))
-                    ->getOptionLabelFromRecordUsing(fn ($record) => "{$record->nombre} ({$record->course->nombre})")
+                    /* ->getOptionLabelFromRecordUsing(fn ($record) => "{$record->nombre} ({$record->course->nombre})") */
+                    ->getOptionLabelFromRecordUsing(fn ($record) => 
+                        ($record->nombre ?? 'N/A') . ' (' . ($record->course->nombre ?? 'N/A') . ')'
+                    )
                     ->preload()
                     ->required(),
             ]);

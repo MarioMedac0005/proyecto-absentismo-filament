@@ -74,10 +74,20 @@ class ScheduleResource extends Resource
                     ->preload()
                     ->options(function () {
                         if (auth()->user()->hasRole('profesor')) {
+                            return auth()->user()->subjects()
+                                        ->whereNotNull('nombre')
+                                        ->pluck('nombre', 'id')
+                                        ->toArray();
+                        }
+                        return Subject::whereNotNull('nombre')->pluck('nombre', 'id')->toArray();
+                    })
+
+                    /* ->options(function () {
+                        if (auth()->user()->hasRole('profesor')) {
                             return auth()->user()->subjects()->pluck('subjects.nombre', 'subjects.id');
                         }
                         return Subject::pluck('nombre', 'id');
-                    }),
+                    }), */
             ]);
     }
 
