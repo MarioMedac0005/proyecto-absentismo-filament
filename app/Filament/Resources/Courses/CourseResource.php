@@ -135,7 +135,7 @@ class CourseResource extends Resource
                             ->form([
                                 Select::make('course_id')
                                     ->label('Curso')
-                                    ->options(Course::all()->pluck('nombre', 'id'))
+                                    ->options(Course::whereNotNull('nombre')->pluck('nombre', 'id'))
                                     ->required()
                                     ->searchable(),
                             ])
@@ -211,7 +211,7 @@ class CourseResource extends Resource
                     ->label('Grado'),
                 SelectFilter::make('inicio_curso')
                     ->label('Año de inicio')
-                    ->options(fn () => Course::distinct()->pluck('inicio_curso', 'inicio_curso')->sort()->toArray()),
+                    ->options(fn () => Course::whereNotNull('inicio_curso')->distinct()->pluck('inicio_curso', 'inicio_curso')->sort()->toArray()),
             ])
             ->recordActions([
                 EditAction::make()
