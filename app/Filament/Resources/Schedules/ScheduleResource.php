@@ -60,16 +60,26 @@ class ScheduleResource extends Resource
                         'viernes' => 'Viernes',
                     ])
                     ->placeholder('Día de la semana')
-                    ->required(),
+                    ->required()
+                    ->validationMessages([
+                        'required' => 'El día de la semana es obligatorio',
+                    ]),
                 TextInput::make('horas')
                     ->label('Horas')
                     ->placeholder('Horas')
                     ->required()
-                    ->numeric(),
+                    ->numeric()
+                    ->validationMessages([
+                        'required' => 'Las horas son obligatorias',
+                        'numeric' => 'Las horas deben ser un número',
+                    ]),
                 Select::make('subject_id')
                     ->label('Asignatura')
                     ->placeholder('Asignatura')
                     ->required()
+                    ->validationMessages([
+                        'required' => 'La asignatura es obligatoria',
+                    ])
                     ->searchable()
                     ->preload()
                     ->options(function () {

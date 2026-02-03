@@ -49,18 +49,31 @@ class UserResource extends Resource
                 TextInput::make('name')
                     ->label('Nombre')
                     ->placeholder('Nombre del profesor')
-                    ->required(),
+                    ->rules(['required', 'string', 'min:3', 'max:255'])
+                    ->validationMessages([
+                        'required' => 'El nombre es obligatorio',
+                        'string' => 'El nombre debe ser texto',
+                        'min' => 'El nombre debe tener al menos 3 caracteres',
+                        'max' => 'El nombre debe tener como maximo 255 caracteres',
+                    ]),
                 TextInput::make('email')
                     ->label('Email')
                     ->placeholder('Email del profesor')
-                    ->email()
-                    ->required(),
+                    ->rules(['required', 'email', 'max:255'])
+                    ->validationMessages([
+                        'required' => 'El email es obligatorio',
+                        'email' => 'El email debe ser un correo electronico valido',
+                        'max' => 'El email debe tener como maximo 255 caracteres',
+                    ]),
                 TextInput::make('password')
                     ->label('Contraseña')
                     ->placeholder('Contraseña del profesor')
                     ->password()
                     ->helperText(fn ($state) => filled($state) ? 'Dejar en blanco para no cambiar la contraseña': '')
                     ->required(fn (string $context): bool => $context === 'create') // Campo requerido unicamente en el crear
+                    ->validationMessages([
+                        'required' => 'La contraseña es obligatoria',
+                    ])
                     ->visible(fn (string $context): bool => $context === 'create') // Campo visible unicamente en el crear
                     ->dehydrateStateUsing(fn ($state) => filled($state) ? Hash::make($state) : null) // Si el campo esta vacio lo deja como null, si no lo hashea
                     ->dehydrated(fn ($state) => filled($state)), // Si el campo esta vacio no se guarda
@@ -68,10 +81,12 @@ class UserResource extends Resource
                     ->label('Teléfono')
                     ->placeholder('+34 600 123 456')
                     ->tel()
-                    ->regex('/^[0-9+\-\s]+$/')
-                    ->minLength(8)
-                    ->maxLength(15)
-                    ->nullable()
+                    ->rules(['regex:/^[0-9+\-\s]+$/', 'min:8', 'max:15'])
+                    ->validationMessages([
+                        'regex' => 'El telefono debe contener solo numeros, espacios y guiones',
+                        'min' => 'El telefono debe tener al menos 8 caracteres',
+                        'max' => 'El telefono debe tener como maximo 15 caracteres',
+                    ])
                     ->default(null),
                 MultiSelect::make('subjects')
                     ->label('Asignaturas')
@@ -82,7 +97,10 @@ class UserResource extends Resource
                         ($record->nombre ?? 'N/A') . ' (' . ($record->course->nombre ?? 'N/A') . ')'
                     )
                     ->preload()
-                    ->required(),
+                    ->required()
+                    ->validationMessages([
+                        'required' => 'El profesor debe tener al menos una asignatura',
+                    ]),
             ]);
     }
 

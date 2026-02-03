@@ -49,7 +49,10 @@ class SubjectResource extends Resource
             ->components([
                 TextInput::make('nombre')
                     ->placeholder('Nombre de la asignatura')
-                    ->required(),
+                    ->required()
+                    ->validationMessages([
+                        'required' => 'El nombre de la asignatura es obligatorio',
+                    ]),
                 TextInput::make('horas_semanales')
                     ->placeholder('Horas semanales')
                     ->disabled()
@@ -57,14 +60,20 @@ class SubjectResource extends Resource
                 Select::make('grado')
                     ->placeholder('Grado')
                     ->options(['primero' => 'Primero', 'segundo' => 'Segundo'])
-                    ->required(),
+                    ->required()
+                    ->validationMessages([
+                        'required' => 'El grado es obligatorio',
+                    ]),
                 Select::make('course_id')
                     ->label('Curso')
                     ->placeholder('Curso')
                     ->relationship('course', 'nombre')
                     ->searchable()
                     ->preload()
-                    ->required(),
+                    ->required()
+                    ->validationMessages([
+                        'required' => 'El curso es obligatorio',
+                    ]),
             ]);
     }
 

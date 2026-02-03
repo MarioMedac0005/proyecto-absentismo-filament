@@ -126,6 +126,11 @@ class SubjectHoursResource extends Resource
         return static::getEloquentQuery()->count();
     }
 
+    public static function getNavigationBadgeTooltip(): ?string
+    {
+        return 'Numero de horas por asignatura';
+    }
+
     public static function getNavigationGroup(): ?string
     {
         $user = Auth::user();

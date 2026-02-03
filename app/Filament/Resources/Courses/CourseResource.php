@@ -56,11 +56,21 @@ class CourseResource extends Resource
                     ->schema([
                         TextInput::make('nombre')
                             ->placeholder('Nombre del curso')
-                            ->required(),
+                            ->rules(['required', 'string', 'min:3', 'max:255'])
+                            ->validationMessages([
+                                'required' => 'El nombre es obligatorio',
+                                'string' => 'El nombre debe ser texto',
+                                'min' => 'El nombre debe tener al menos 3 caracteres',
+                                'max' => 'El nombre debe tener como maximo 255 caracteres',
+                            ]),
                         Select::make('grado')
                             ->options(['primero' => 'Primero', 'segundo' => 'Segundo'])
-                            ->required()
-                            ->placeholder('Grado del curso'),
+                            ->rules(['required', 'string', 'in:primero,segundo'])
+                            ->placeholder('Grado del curso')
+                            ->validationMessages([
+                                'required' => 'El grado es obligatorio',
+                                'in' => 'El grado debe ser primero o segundo',
+                            ]),
                     ])->columns(1),
 
                 \Filament\Schemas\Components\Section::make('Fechas del Curso')
@@ -68,16 +78,18 @@ class CourseResource extends Resource
                     ->schema([
                         TextInput::make('inicio_curso')
                             ->label('Año Inicio')
-                            ->numeric()
-                            ->minValue(2000)
-                            ->maxValue(2100)
-                            ->required(),
+                            ->rules(['required', 'numeric'])
+                            ->validationMessages([
+                                'required' => 'El año de inicio es obligatorio',
+                                'numeric' => 'El año de inicio debe ser un número',
+                            ]),
                         TextInput::make('fin_curso')
                             ->label('Año Fin')
-                            ->numeric()
-                            ->minValue(2000)
-                            ->maxValue(2100)
-                            ->required(),
+                            ->rules(['required', 'numeric'])
+                            ->validationMessages([
+                                'required' => 'El año de fin es obligatorio',
+                                'numeric' => 'El año de fin debe ser un número',
+                            ]),
                     ])->columns(1),
 
                 \Filament\Schemas\Components\Tabs::make('Trimestres')
@@ -87,33 +99,67 @@ class CourseResource extends Resource
                                 DatePicker::make('trimestre_1_inicio')
                                     ->label('Inicio')
                                     ->native(false)
-                                    ->closeOnDateSelection(),
+                                    ->closeOnDateSelection()
+                                    ->required()
+                                    ->validationMessages([
+                                        'required' => 'El inicio del trimestre es obligatorio',
+                                    ]),
                                 DatePicker::make('trimestre_1_fin')
                                     ->label('Fin')
                                     ->native(false)
-                                    ->closeOnDateSelection(),
+                                    ->closeOnDateSelection()
+                                    ->required()
+                                    ->after('trimestre_1_inicio')
+                                    ->validationMessages([
+                                        'required' => 'El fin del trimestre es obligatorio',
+                                        'after' => 'El fin del trimestre debe ser posterior al inicio del trimestre',
+                                    ]),
                             ])->columns(2),
                         \Filament\Schemas\Components\Tabs\Tab::make('2º Trimestre')
                             ->schema([
                                 DatePicker::make('trimestre_2_inicio')
                                     ->label('Inicio')
                                     ->native(false)
-                                    ->closeOnDateSelection(),
+                                    ->closeOnDateSelection()
+                                    ->required()
+                                    ->after('trimestre_1_fin')
+                                    ->validationMessages([
+                                        'required' => 'El inicio del trimestre es obligatorio',
+                                        'after' => 'El inicio del trimestre debe ser posterior al fin del trimestre anterior',
+                                    ]),
                                 DatePicker::make('trimestre_2_fin')
                                     ->label('Fin')
                                     ->native(false)
-                                    ->closeOnDateSelection(),
+                                    ->closeOnDateSelection()
+                                    ->required()
+                                    ->after('trimestre_2_inicio')
+                                    ->validationMessages([
+                                        'required' => 'El fin del trimestre es obligatorio',
+                                        'after' => 'El fin del trimestre debe ser posterior al inicio del trimestre',
+                                    ]),
                             ])->columns(2),
                         \Filament\Schemas\Components\Tabs\Tab::make('3º Trimestre')
                             ->schema([
                                 DatePicker::make('trimestre_3_inicio')
                                     ->label('Inicio')
                                     ->native(false)
-                                    ->closeOnDateSelection(),
+                                    ->closeOnDateSelection()
+                                    ->required()
+                                    ->after('trimestre_2_fin')
+                                    ->validationMessages([
+                                        'required' => 'El inicio del trimestre es obligatorio',
+                                        'after' => 'El inicio del trimestre debe ser posterior al fin del trimestre anterior',
+                                    ]),
                                 DatePicker::make('trimestre_3_fin')
                                     ->label('Fin')
                                     ->native(false)
-                                    ->closeOnDateSelection(),
+                                    ->closeOnDateSelection()
+                                    ->required()
+                                    ->after('trimestre_3_inicio')
+                                    ->validationMessages([
+                                        'required' => 'El fin del trimestre es obligatorio',
+                                        'after' => 'El fin del trimestre debe ser posterior al inicio del trimestre',
+                                    ]),
                             ])->columns(2),
                     ])
                     ->columnSpan('full'),
@@ -137,6 +183,9 @@ class CourseResource extends Resource
                                     ->label('Curso')
                                     ->options(Course::whereNotNull('nombre')->pluck('nombre', 'id'))
                                     ->required()
+                                    ->validationMessages([
+                                        'required' => 'El curso es obligatorio',
+                                    ])
                                     ->searchable(),
                             ])
                             ->action(function (array $data, \App\Services\TemporalizationCalendar $service) {

@@ -39,5 +39,13 @@ class DatabaseSeeder extends Seeder
             'password' => \Illuminate\Support\Facades\Hash::make('Usuario123'),
         ]);
         $profesor->assignRole('profesor');
+
+        $javi = User::factory()->create([
+            'name' => 'Javier Ruiz',
+            'email' => 'javier.ruiz@doc.medac.es',
+            'password' => \Illuminate\Support\Facades\Hash::make('Usuario123'),
+        ]);
+
+        $javi->assignRole('admin');
     }
 }

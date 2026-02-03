@@ -20,6 +20,7 @@ use Filament\Forms\Components\ToggleButtons;
 use Filament\Schemas\Components\Group;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
+use Filament\Support\Colors\Color;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
@@ -79,7 +80,10 @@ class CalendarResource extends Resource
                     ->required(fn ($get, $operation) => $operation === 'create' && ! $get('is_range'))
                     ->visible(fn ($get, $operation) => $operation === 'edit' || ! $get('is_range'))
                     ->native(false)
-                    ->closeOnDateSelection(),
+                    ->closeOnDateSelection()
+                    ->validationMessages([
+                        'required' => 'La fecha es obligatoria',
+                    ]),
                 
                 DatePicker::make('start_date')
                     ->label('Fecha Inicio')
@@ -87,7 +91,10 @@ class CalendarResource extends Resource
                     ->required(fn ($get, $operation) => $operation === 'create' && $get('is_range'))
                     ->visible(fn ($get, $operation) => $operation === 'create' && $get('is_range'))
                     ->native(false)
-                    ->closeOnDateSelection(),
+                    ->closeOnDateSelection()
+                    ->validationMessages([
+                        'required' => 'La fecha de inicio es obligatoria',
+                    ]),
 
                 DatePicker::make('end_date')
                     ->label('Fecha Fin')
@@ -96,7 +103,11 @@ class CalendarResource extends Resource
                     ->visible(fn ($get, $operation) => $operation === 'create' && $get('is_range'))
                     ->afterOrEqual('start_date')
                     ->native(false)
-                    ->closeOnDateSelection(),
+                    ->closeOnDateSelection()
+                    ->validationMessages([
+                        'required' => 'La fecha de fin es obligatoria',
+                        'after_or_equal' => 'La fecha de fin debe ser igual o posterior a la fecha de inicio',
+                    ]),
 
                 TextInput::make('descripcion')
                     ->label('Descripción')
@@ -107,6 +118,9 @@ class CalendarResource extends Resource
                     /* ->relationship('type', 'nombre') */
                     ->relationship('type', 'nombre', fn($query) => $query->whereNotNull('nombre'))
                     ->required()
+                    ->validationMessages([
+                        'required' => 'El tipo de día es obligatorio',
+                    ])
                     ->label('Tipo de día')
                     ->placeholder('Selecciona un tipo')
                     ->searchable()
@@ -128,6 +142,8 @@ class CalendarResource extends Resource
                     ->searchable(),
                 TextColumn::make('type.nombre')
                     ->label('Tipo')
+                    ->badge()
+                    ->color(fn ($record) => $record->type && $record->type->color ? Color::hex($record->type->color) : 'gray')
                     ->sortable(),
                 TextColumn::make('created_at')
                     ->label('Fecha de creación')

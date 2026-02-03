@@ -18,6 +18,7 @@ use Filament\Forms\Components\TextInput;
 use Filament\Tables\Columns\ColorColumn;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
+use Filament\Support\Colors\Color;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\TrashedFilter;
@@ -52,10 +53,18 @@ class TypeResource extends Resource
                     ->placeholder('Nombre del tipo de día')
                     ->required()
                     ->minLength(3)
-                    ->maxLength(100),
+                    ->maxLength(100)
+                    ->validationMessages([
+                        'required' => 'El nombre es obligatorio',
+                        'min' => 'El nombre debe tener al menos 3 caracteres',
+                        'max' => 'El nombre debe tener como máximo 100 caracteres',
+                    ]),
                 ColorPicker::make('color')
                     ->label('Color')
-                    ->required(),
+                    ->required()
+                    ->validationMessages([
+                        'required' => 'El color es obligatorio',
+                    ]),
             ]);
     }
 
@@ -66,6 +75,8 @@ class TypeResource extends Resource
             ->columns([
                 TextColumn::make('nombre')
                     ->label('Nombre')
+                    ->badge()
+                    ->color(fn ($record) => $record->color ? Color::hex($record->color) : null)
                     ->searchable(),
                 ColorColumn::make('color')
                     ->label('Color'),
