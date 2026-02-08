@@ -6,22 +6,34 @@ use App\Models\Calendar;
 use App\Models\Course;
 use App\Models\Schedule;
 use App\Models\Subject;
+use App\Models\SubjectUser;
 use App\Models\Type;
+use App\Models\User;
 use Carbon\Carbon;
-use Hash;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\Hash;
 
 class RealDataSeeder extends Seeder
 {
     public function run(): void
     {
-        // 1. Types
-        $typeFestivo = Type::create(['nombre' => 'Festivo']);
-        $typeLectivo = Type::create(['nombre' => 'Lectivo']);
-        $typeVacaciones = Type::create(['nombre' => 'Vacaciones']);
+        // 1. Tipos de días
+        $tipoFestivo = Type::create([
+            'nombre' => 'Festivo',
+            'color' => '#ff4141',
+        ]);
 
-        // 2. Calendar (Holidays 2024-2025)
-        $holidays = [
+        $tipoLectivo = Type::create([
+            'nombre' => 'Lectivo',
+        ]);
+
+        $tipoVacaciones = Type::create([
+            'nombre' => 'Vacaciones',
+            'color' => '#42ff7d',
+        ]);
+
+        // 2. Calendario de Festivos
+        $diasFestivos = [
             '2024-10-12', // Fiesta Nacional de España
             '2024-11-01', // Todos los Santos
             '2024-12-06', // Día de la Constitución
@@ -35,16 +47,16 @@ class RealDataSeeder extends Seeder
             '2025-05-01', // Fiesta del Trabajo
         ];
 
-        foreach ($holidays as $date) {
+        foreach ($diasFestivos as $fecha) {
             Calendar::create([
-                'fecha' => Carbon::parse($date),
+                'fecha' => Carbon::parse($fecha),
                 'descripcion' => 'Festivo',
-                'type_id' => $typeFestivo->id,
+                'type_id' => $tipoFestivo->id,
             ]);
         }
 
-        // 3. Teachers
-        $teachersNames = [
+        // 3. Profesores
+        $nombresProfesores = [
             'Juan Pérez',
             'María García',
             'Antonio López',
@@ -57,27 +69,24 @@ class RealDataSeeder extends Seeder
             'Laura Díaz',
         ];
 
-        $teachers = [];
-        foreach ($teachersNames as $name) {
-            $teachers[] = \App\Models\User::create([
-                'name' => $name,
-                'email' => strtolower(str_replace(' ', '.', $name)) . '@example.com',
+        $profesoresCreados = [];
+
+        foreach ($nombresProfesores as $nombre) {
+            $profesor = User::create([
+                'name' => $nombre,
+                'email' => strtolower(str_replace(' ', '.', $nombre)) . '@gmail.com',
                 'phone' => '600' . rand(100000, 999999),
                 'password' => Hash::make('Usuario123!'),
             ]);
+
+            $profesor->assignRole('profesor');
+            $profesoresCreados[] = $profesor;
         }
 
-        // 4. Courses
-        $coursesData = [
-            ['nombre' => '1º DAW', 'grado' => 'primero'],
-            ['nombre' => '2º DAW', 'grado' => 'segundo'],
-            ['nombre' => '1º DAM', 'grado' => 'primero'],
-            ['nombre' => '2º DAM', 'grado' => 'segundo'],
-            ['nombre' => '1º ASIR', 'grado' => 'primero'],
-            ['nombre' => '2º ASIR', 'grado' => 'segundo'],
-        ];
-
-        $trimesterDates = [
+        // 4. Configuración de Cursos y Fechas
+        $fechasTrimestres = [
+            'inicio_curso' => '2024',
+            'fin_curso' => '2025',
             'trimestre_1_inicio' => '2024-09-15',
             'trimestre_1_fin' => '2024-12-22',
             'trimestre_2_inicio' => '2025-01-08',
@@ -86,114 +95,111 @@ class RealDataSeeder extends Seeder
             'trimestre_3_fin' => '2025-06-20',
         ];
 
-        foreach ($coursesData as $data) {
-            $course = Course::create(array_merge($data, $trimesterDates));
-            $this->createSubjectsForCourse($course, $teachers);
+        $listadoCursos = [
+            ['nombre' => '1º DAW', 'grado' => 'primero'],
+            ['nombre' => '2º DAW', 'grado' => 'segundo'],
+            ['nombre' => '1º DAM', 'grado' => 'primero'],
+            ['nombre' => '2º DAM', 'grado' => 'segundo'],
+            ['nombre' => '1º ASIR', 'grado' => 'primero'],
+            ['nombre' => '2º ASIR', 'grado' => 'segundo'],
+        ];
+
+        // 5. Configuración de Asignaturas (Malla Curricular)
+        $mallaCurricular = [
+            '1º DAW' => [
+                'Programación' => 8,
+                'Bases de Datos' => 6,
+                'Entornos de Desarrollo' => 3,
+                'Lenguajes de Marcas' => 4,
+                'Sistemas Informáticos' => 5,
+                'Formación y Orientación Laboral' => 3,
+            ],
+            '2º DAW' => [
+                'Desarrollo Web en Entorno Cliente' => 7,
+                'Desarrollo Web en Entorno Servidor' => 8,
+                'Despliegue de Aplicaciones Web' => 4,
+                'Diseño de Interfaces Web' => 6,
+                'Empresa e Iniciativa Emprendedora' => 3,
+            ],
+            '1º DAM' => [
+                'Programación' => 8,
+                'Bases de Datos' => 6,
+                'Entornos de Desarrollo' => 3,
+                'Lenguajes de Marcas' => 4,
+                'Sistemas Informáticos' => 5,
+                'Formación y Orientación Laboral' => 3,
+            ],
+            '2º DAM' => [
+                'Acceso a Datos' => 6,
+                'Desarrollo de Interfaces' => 6,
+                'Programación Multimedia y Disp. Móviles' => 5,
+                'Programación de Servicios y Procesos' => 4,
+                'Sistemas de Gestión Empresarial' => 5,
+                'Empresa e Iniciativa Emprendedora' => 3,
+            ],
+            '1º ASIR' => [
+                'Fundamentos de Hardware' => 3,
+                'Gestión de Bases de Datos' => 5,
+                'Implantación de Sist. Operativos' => 8,
+                'Lenguajes de Marcas' => 3,
+                'Planificación y Admin. de Redes' => 6,
+                'Formación y Orientación Laboral' => 3,
+            ],
+            '2º ASIR' => [
+                'Admin. de Sist. Gestores de Bases de Datos' => 3,
+                'Admin. de Sistemas Operativos' => 6,
+                'Implantación de Aplicaciones Web' => 5,
+                'Servicios de Red e Internet' => 6,
+                'Seguridad y Alta Disponibilidad' => 5,
+                'Empresa e Iniciativa Emprendedora' => 3,
+            ],
+        ];
+
+        // Bucle principal de creación
+        foreach ($listadoCursos as $datosCurso) {
+            // Crear el curso con las fechas de trimestres
+            $curso = Course::create(array_merge($datosCurso, $fechasTrimestres));
+
+            $asignaturasDelCurso = $mallaCurricular[$curso->nombre] ?? [];
+
+            foreach ($asignaturasDelCurso as $nombreAsignatura => $horasSemanales) {
+                $asignatura = Subject::create([
+                    'nombre' => $nombreAsignatura,
+                    'horas_semanales' => $horasSemanales,
+                    'grado' => $curso->grado,
+                    'course_id' => $curso->id,
+                ]);
+
+                // Asignar profesor aleatorio
+                $profesor = $profesoresCreados[array_rand($profesoresCreados)];
+                
+                SubjectUser::create([
+                    'subject_id' => $asignatura->id,
+                    'user_id' => $profesor->id,
+                ]);
+
+                $this->crearHorario($asignatura, $horasSemanales);
+            }
         }
     }
 
-    private function createSubjectsForCourse(Course $course, array $teachers)
+    private function crearHorario(Subject $asignatura, int $horasSemanales): void
     {
-        $subjects = [];
+        $diasSemana = ['lunes', 'martes', 'miercoles', 'jueves', 'viernes'];
+        $horasRestantes = $horasSemanales;
+        $indiceDia = 0;
 
-        if (str_contains($course->nombre, 'DAW')) {
-            if ($course->grado === 'primero') {
-                $subjects = [
-                    'Programación' => 8,
-                    'Bases de Datos' => 6,
-                    'Entornos de Desarrollo' => 3,
-                    'Lenguajes de Marcas' => 4,
-                    'Sistemas Informáticos' => 5,
-                    'Formación y Orientación Laboral' => 3,
-                ];
-            } else {
-                $subjects = [
-                    'Desarrollo Web en Entorno Cliente' => 7,
-                    'Desarrollo Web en Entorno Servidor' => 8,
-                    'Despliegue de Aplicaciones Web' => 4,
-                    'Diseño de Interfaces Web' => 6,
-                    'Empresa e Iniciativa Emprendedora' => 3,
-                ];
-            }
-        } elseif (str_contains($course->nombre, 'DAM')) {
-            if ($course->grado === 'primero') {
-                $subjects = [
-                    'Programación' => 8,
-                    'Bases de Datos' => 6,
-                    'Entornos de Desarrollo' => 3,
-                    'Lenguajes de Marcas' => 4,
-                    'Sistemas Informáticos' => 5,
-                    'Formación y Orientación Laboral' => 3,
-                ];
-            } else {
-                $subjects = [
-                    'Acceso a Datos' => 6,
-                    'Desarrollo de Interfaces' => 6,
-                    'Programación Multimedia y Disp. Móviles' => 5,
-                    'Programación de Servicios y Procesos' => 4,
-                    'Sistemas de Gestión Empresarial' => 5,
-                    'Empresa e Iniciativa Emprendedora' => 3,
-                ];
-            }
-        } elseif (str_contains($course->nombre, 'ASIR')) {
-            if ($course->grado === 'primero') {
-                $subjects = [
-                    'Fundamentos de Hardware' => 3,
-                    'Gestión de Bases de Datos' => 5,
-                    'Implantación de Sist. Operativos' => 8,
-                    'Lenguajes de Marcas' => 3,
-                    'Planificación y Admin. de Redes' => 6,
-                    'Formación y Orientación Laboral' => 3,
-                ];
-            } else {
-                $subjects = [
-                    'Admin. de Sist. Gestores de Bases de Datos' => 3,
-                    'Admin. de Sistemas Operativos' => 6,
-                    'Implantación de Aplicaciones Web' => 5,
-                    'Servicios de Red e Internet' => 6,
-                    'Seguridad y Alta Disponibilidad' => 5,
-                    'Empresa e Iniciativa Emprendedora' => 3,
-                ];
-            }
-        }
+        while ($horasRestantes > 0) {
+            $horasHoy = min(2, $horasRestantes); // Máximo 2 horas por bloque
 
-        foreach ($subjects as $name => $hours) {
-            $subject = Subject::create([
-                'nombre' => $name,
-                'horas_semanales' => $hours,
-                'grado' => $course->grado,
-                'course_id' => $course->id,
-            ]);
-
-            // Assign a random teacher
-            $teacher = $teachers[array_rand($teachers)];
-            \App\Models\SubjectUser::create([
-                'subject_id' => $subject->id,
-                'user_id' => $teacher->id,
-            ]);
-
-            $this->createScheduleForSubject($subject, $hours);
-        }
-    }
-
-    private function createScheduleForSubject(Subject $subject, int $weeklyHours)
-    {
-        // Simple distribution logic: distribute hours across M-F
-        $days = ['lunes', 'martes', 'miercoles', 'jueves', 'viernes'];
-        $hoursLeft = $weeklyHours;
-        $dayIndex = 0;
-
-        while ($hoursLeft > 0) {
-            $hoursToday = min(2, $hoursLeft); // Max 2 hours per session per day
-            
             Schedule::create([
-                'dia_semana' => $days[$dayIndex % 5],
-                'horas' => $hoursToday,
-                'subject_id' => $subject->id,
+                'dia_semana' => $diasSemana[$indiceDia % 5],
+                'horas' => $horasHoy,
+                'subject_id' => $asignatura->id,
             ]);
 
-            $hoursLeft -= $hoursToday;
-            $dayIndex++;
+            $horasRestantes -= $horasHoy;
+            $indiceDia++;
         }
     }
 }
