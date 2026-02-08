@@ -33,7 +33,7 @@ class AdminPanelProvider extends PanelProvider
             ->brandLogo( asset('img/logo.png'))
             ->darkModeBrandLogo( asset('img/logoDark.png'))
             ->id('admin')
-            ->path('admin') // Quitar si queremos que no tenga una ruta y quitar si hay alguna ruta que ocupe el /
+            ->path('') // Quitar si queremos que no tenga una ruta y quitar si hay alguna ruta que ocupe el /
             ->login()
             ->passwordReset(
                 RequestPasswordReset::class,
