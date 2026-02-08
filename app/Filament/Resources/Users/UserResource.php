@@ -138,6 +138,10 @@ class UserResource extends Resource
                     ->label('Teléfono')
                     ->searchable()
                     ->toggleable(isToggledHiddenByDefault: true),
+                TextColumn::make('roles.name')
+                    ->label('Rol')
+                    ->badge()
+                    ->toggleable(),
                 TextColumn::make('subjects.nombre')
                     ->label('Asignaturas')
                     ->badge(),

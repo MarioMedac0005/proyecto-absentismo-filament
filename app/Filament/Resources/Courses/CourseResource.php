@@ -210,7 +210,8 @@ class CourseResource extends Resource
                     ->label('Curso Escolar')
                     ->getStateUsing(fn (Course $record) => $record->inicio_curso && $record->fin_curso 
                         ? $record->inicio_curso . '/' . $record->fin_curso
-                        : 'N/A'),
+                        : 'N/A')
+                    ->badge(),
                 TextColumn::make('grado')
                     ->badge(),
                 TextColumn::make('trimestre_1_inicio')
