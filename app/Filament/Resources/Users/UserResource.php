@@ -59,11 +59,23 @@ class UserResource extends Resource
                 TextInput::make('email')
                     ->label('Email')
                     ->placeholder('Email del profesor')
-                    ->rules(['required', 'email', 'max:255'])
+                    ->required()
+                    ->email()
+                    ->maxLength(255)
+                    ->unique(ignorable: fn ($record) => $record)
+                    ->rules([
+                        function ($attribute, $value, $fail) {
+                            $user = \App\Models\User::withTrashed()->where('email', $value)->first();
+                            if ($user && $user->trashed()) {
+                                $fail('Este email pertenece a un usuario eliminado (papelera). Restaurelo si desea usarlo de nuevo.');
+                            }
+                        },
+                    ])
                     ->validationMessages([
                         'required' => 'El email es obligatorio',
                         'email' => 'El email debe ser un correo electronico valido',
                         'max' => 'El email debe tener como maximo 255 caracteres',
+                        'unique' => 'El email ya esta registrado',
                     ]),
                 TextInput::make('password')
                     ->label('Contraseña')
@@ -101,6 +113,13 @@ class UserResource extends Resource
                     ->validationMessages([
                         'required' => 'El profesor debe tener al menos una asignatura',
                     ]),
+                \Filament\Forms\Components\Select::make('roles')
+                    ->label('Rol')
+                    ->relationship('roles', 'name')
+                    ->multiple()
+                    ->preload()
+                    ->searchable()
+                    ->required(),
             ]);
     }
 
@@ -150,22 +169,47 @@ class UserResource extends Resource
             ])
             ->recordActions([
                 EditAction::make()
+                    ->label('Editar')
                     ->successNotificationTitle('Profesor editado correctamente')
                     ->modalHeading('Editar profesor'),
                 DeleteAction::make()
+                    ->label('Eliminar')
+                    ->modalHeading('Eliminar profesor')
+                    ->modalDescription('¿Está seguro de que desea eliminar este profesor?')
+                    ->modalSubmitActionLabel('Sí, eliminar')
                     ->successNotificationTitle('Profesor eliminado correctamente'),
                 ForceDeleteAction::make()
-                    ->successNotificationTitle('Profesor eliminado correctamente'),
+                    ->label('Forzar eliminación')
+                    ->modalHeading('Forzar eliminación de profesor')
+                    ->modalDescription('¿Está seguro de que desea eliminar permanentemente este profesor? Esta acción no se puede deshacer.')
+                    ->modalSubmitActionLabel('Sí, eliminar permanentemente')
+                    ->successNotificationTitle('Profesor eliminado permanentemente'),
                 RestoreAction::make()
+                    ->label('Restaurar')
+                    ->modalHeading('Restaurar profesor')
+                    ->modalDescription('¿Está seguro de que desea restaurar este profesor?')
+                    ->modalSubmitActionLabel('Sí, restaurar')
                     ->successNotificationTitle('Profesor restaurado correctamente'),
             ])
             ->toolbarActions([
                 BulkActionGroup::make([
                     DeleteBulkAction::make()
+                        ->label('Eliminar seleccionados')
+                        ->modalHeading('Eliminar profesores seleccionados')
+                        ->modalDescription('¿Está seguro de que desea eliminar los profesores seleccionados?')
+                        ->modalSubmitActionLabel('Sí, eliminar')
                         ->successNotificationTitle('Profesores eliminados correctamente'),
                     ForceDeleteBulkAction::make()
-                        ->successNotificationTitle('Profesores eliminados correctamente'),
+                        ->label('Forzar eliminación de seleccionados')
+                        ->modalHeading('Forzar eliminación de profesores seleccionados')
+                        ->modalDescription('¿Está seguro de que desea eliminar permanentemente los profesores seleccionados? Esta acción no se puede deshacer.')
+                        ->modalSubmitActionLabel('Sí, eliminar permanentemente')
+                        ->successNotificationTitle('Profesores eliminados permanentemente'),
                     RestoreBulkAction::make()
+                        ->label('Restaurar seleccionados')
+                        ->modalHeading('Restaurar profesores seleccionados')
+                        ->modalDescription('¿Está seguro de que desea restaurar los profesores seleccionados?')
+                        ->modalSubmitActionLabel('Sí, restaurar')
                         ->successNotificationTitle('Profesores restaurados correctamente'),
                 ]),
             ]);

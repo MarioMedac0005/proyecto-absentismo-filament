@@ -15,7 +15,9 @@ class ManageUsers extends ManageRecords
         return [
             CreateAction::make()
                 ->label('Crear profesor')
-                ->modalHeading('Crear profesor'),
+                ->modalHeading('Crear profesor')
+                ->modalSubmitActionLabel('Crear')
+                ->createAnother(false),
         ];
     }
 
