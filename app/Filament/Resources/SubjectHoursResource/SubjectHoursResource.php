@@ -68,13 +68,22 @@ class SubjectHoursResource extends Resource
                     ->toggleable(isToggledHiddenByDefault: true),
                 Tables\Columns\TextColumn::make('hours_t1')
                     ->label('Horas 1º Tri')
-                    ->state(fn (Subject $record) => $record->calcularHorasPorTrimestre(1)),
+                    ->state(function (Subject $record) {
+                        $userId = auth()->user()->hasRole('profesor') ? auth()->id() : null;
+                        return $record->calcularHorasPorTrimestre(1, $userId);
+                    }),
                 Tables\Columns\TextColumn::make('hours_t2')
                     ->label('Horas 2º Tri')
-                    ->state(fn (Subject $record) => $record->calcularHorasPorTrimestre(2)),
+                    ->state(function (Subject $record) {
+                        $userId = auth()->user()->hasRole('profesor') ? auth()->id() : null;
+                        return $record->calcularHorasPorTrimestre(2, $userId);
+                    }),
                 Tables\Columns\TextColumn::make('hours_t3')
                     ->label('Horas 3º Tri')
-                    ->state(fn (Subject $record) => $record->calcularHorasPorTrimestre(3)),
+                    ->state(function (Subject $record) {
+                        $userId = auth()->user()->hasRole('profesor') ? auth()->id() : null;
+                        return $record->calcularHorasPorTrimestre(3, $userId);
+                    }),
                 Tables\Columns\TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()
@@ -111,7 +120,7 @@ class SubjectHoursResource extends Resource
 
     public static function getEloquentQuery(): Builder
     {
-        $query = parent::getEloquentQuery();
+        $query = parent::getEloquentQuery()->with(['course', 'schedules']);
 
         if (auth()->user()->hasRole('profesor')) {
             $subjectIds = auth()->user()->subjects()->pluck('subjects.id'); // IMPORTANTE: especificar la tabla

@@ -227,23 +227,31 @@
                                                     $estiloCelda = '';
 
                                                     if ($dia) {
+                                                        // Aplicar estilo de fin de semana por defecto
                                                         if ($dia['diaSemana'] >= 6) {
                                                             $claseCelda = 'bg-weekend';
                                                         }
                                                         
-                                                        // Lógica de colores basada en el tipo de evento
-                                                        foreach ($dia['eventos'] as $evento) {
-                                                            if ($evento->type && $evento->type->color) {
-                                                                $estiloCelda = 'background-color: ' . $evento->type->color . '; color: white;';
-                                                            } else {
-                                                                // Fallback si no hay color definido (mantener logica anterior o default)
-                                                                 $nombreTipo = strtolower($evento->type->nombre ?? '');
-                                                                 if (str_contains($nombreTipo, 'festivo')) $claseCelda = 'bg-festivo';
-                                                                 elseif (str_contains($nombreTipo, 'no lectivo')) $claseCelda = 'bg-no-lectivo';
-                                                                 elseif (str_contains($nombreTipo, 'evaluacion') || str_contains($nombreTipo, 'evaluación')) $claseCelda = 'bg-evaluacion';
-                                                                 elseif (str_contains($nombreTipo, 'recup')) $claseCelda = 'bg-recuperacion';
-                                                                 elseif (str_contains($nombreTipo, 'entrega') || str_contains($nombreTipo, 'boletin')) $claseCelda = 'bg-entrega';
-                                                                 elseif (str_contains($nombreTipo, 'comienzo') || str_contains($nombreTipo, 'fin')) $claseCelda = 'bg-inicio-fin';
+                                                        // Verificar si hay eventos y aplicar el color del tipo de día
+                                                        // Los eventos pueden ser un array o una Collection de Laravel
+                                                        if (isset($dia['eventos']) && count($dia['eventos']) > 0) {
+                                                            foreach ($dia['eventos'] as $evento) {
+                                                                if ($evento->type && $evento->type->color) {
+                                                                    $bgColor = $evento->type->color;
+                                                                    
+                                                                    // Calcular color de texto óptimo según luminancia del fondo
+                                                                    $color = str_replace('#', '', $bgColor);
+                                                                    $r = hexdec(substr($color, 0, 2));
+                                                                    $g = hexdec(substr($color, 2, 2));
+                                                                    $b = hexdec(substr($color, 4, 2));
+                                                                    $luminance = (0.299 * $r + 0.587 * $g + 0.114 * $b) / 255;
+                                                                    $textColor = $luminance > 0.5 ? 'black' : 'white';
+                                                                    
+                                                                    $estiloCelda = 'background-color: ' . $bgColor . '; color: ' . $textColor . ';';
+                                                                    // Limpiar la clase de fin de semana si hay un evento con color
+                                                                    $claseCelda = '';
+                                                                    break; // Solo aplicar el color del primer evento
+                                                                }
                                                             }
                                                         }
                                                     }

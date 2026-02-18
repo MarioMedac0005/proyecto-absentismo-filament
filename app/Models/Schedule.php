@@ -12,11 +12,18 @@ class Schedule extends Model
     protected $fillable = [
         'dia_semana',
         'horas',
-        'subject_id'
+        'subject_id',
+        'user_id',
     ];
 
     public function subject()
     {
         return $this->belongsTo(Subject::class);
     }
+
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
 }
+

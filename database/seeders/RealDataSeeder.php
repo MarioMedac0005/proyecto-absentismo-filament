@@ -20,7 +20,7 @@ class RealDataSeeder extends Seeder
         // 1. Tipos de días
         $tipoFestivo = Type::create([
             'nombre' => 'Festivo',
-            'color' => '#ff4141',
+            'color' => '#ff4141', // Rojo
         ]);
 
         $tipoLectivo = Type::create([
@@ -29,7 +29,17 @@ class RealDataSeeder extends Seeder
 
         $tipoVacaciones = Type::create([
             'nombre' => 'Vacaciones',
-            'color' => '#42ff7d',
+            'color' => '#42ff7d', // Verde
+        ]);
+
+        $tipoEvaluacion = Type::create([
+            'nombre' => 'Evaluación',
+            'color' => '#f1c40f', // Amarillo
+        ]);
+
+        $tipoExamen = Type::create([
+            'nombre' => 'Examen',
+            'color' => '#e67e22', // Naranja
         ]);
 
         // 2. Calendario de Festivos
@@ -55,7 +65,62 @@ class RealDataSeeder extends Seeder
             ]);
         }
 
-        // 3. Profesores
+        // 3. Vacaciones - Periodos escolares
+        $periodosVacaciones = [
+            // Vacaciones de Navidad
+            ['inicio' => '2024-12-23', 'fin' => '2025-01-07', 'descripcion' => 'Vacaciones de Navidad'],
+            // Vacaciones de Semana Santa
+            ['inicio' => '2025-04-14', 'fin' => '2025-04-21', 'descripcion' => 'Vacaciones de Semana Santa'],
+        ];
+
+        foreach ($periodosVacaciones as $periodo) {
+            $inicio = Carbon::parse($periodo['inicio']);
+            $fin = Carbon::parse($periodo['fin']);
+            
+            for ($fecha = $inicio->copy(); $fecha->lte($fin); $fecha->addDay()) {
+                // Evitar duplicar si ya existe un festivo en esa fecha
+                $existeFestivo = Calendar::where('fecha', $fecha->format('Y-m-d'))->exists();
+                if (!$existeFestivo) {
+                    Calendar::create([
+                        'fecha' => $fecha->format('Y-m-d'),
+                        'descripcion' => $periodo['descripcion'],
+                        'type_id' => $tipoVacaciones->id,
+                    ]);
+                }
+            }
+        }
+
+        // 4. Días de evaluación
+        $diasEvaluacion = [
+            '2024-12-20', // Final 1er trimestre
+            '2025-03-28', // Final 2do trimestre
+            '2025-06-19', // Final 3er trimestre
+        ];
+
+        foreach ($diasEvaluacion as $fecha) {
+            Calendar::create([
+                'fecha' => Carbon::parse($fecha),
+                'descripcion' => 'Día de Evaluación',
+                'type_id' => $tipoEvaluacion->id,
+            ]);
+        }
+
+        // 5. Días de examen (ejemplo)
+        $diasExamen = [
+            '2024-12-18', '2024-12-19', // Exámenes finales 1er trimestre
+            '2025-03-26', '2025-03-27', // Exámenes finales 2do trimestre
+            '2025-06-17', '2025-06-18', // Exámenes finales 3er trimestre
+        ];
+
+        foreach ($diasExamen as $fecha) {
+            Calendar::create([
+                'fecha' => Carbon::parse($fecha),
+                'descripcion' => 'Examen',
+                'type_id' => $tipoExamen->id,
+            ]);
+        }
+
+        // 6. Profesores
         $nombresProfesores = [
             'Juan Pérez',
             'María García',

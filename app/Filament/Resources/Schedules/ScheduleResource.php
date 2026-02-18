@@ -5,6 +5,7 @@ namespace App\Filament\Resources\Schedules;
 use App\Filament\Resources\Schedules\Pages\ManageSchedules;
 use App\Models\Schedule;
 use App\Models\Subject;
+use App\Models\User;
 use Auth;
 use BackedEnum;
 use Filament\Actions\BulkActionGroup;
@@ -90,14 +91,16 @@ class ScheduleResource extends Resource
                                         ->toArray();
                         }
                         return Subject::whereNotNull('subjects.nombre')->pluck('subjects.nombre', 'subjects.id')->toArray();
-                    })
-
-                    /* ->options(function () {
-                        if (auth()->user()->hasRole('profesor')) {
-                            return auth()->user()->subjects()->pluck('subjects.nombre', 'subjects.id');
-                        }
-                        return Subject::pluck('nombre', 'id');
-                    }), */
+                    }),
+                Select::make('user_id')
+                    ->label('Profesor')
+                    ->placeholder('Selecciona un profesor')
+                    ->searchable()
+                    ->preload()
+                    ->visible(fn () => auth()->user()->hasRole('admin'))
+                    ->options(function () {
+                        return User::role('profesor')->pluck('name', 'id')->toArray();
+                    }),
             ]);
     }
 
@@ -116,6 +119,10 @@ class ScheduleResource extends Resource
                 TextColumn::make('subject.nombre')
                     ->label('Asignatura')
                     ->sortable(),
+                TextColumn::make('user.name')
+                    ->label('Profesor')
+                    ->sortable()
+                    ->default('Sin asignar'),
                 TextColumn::make('created_at')
                     ->label('Fecha de creación')
                     ->dateTime()
