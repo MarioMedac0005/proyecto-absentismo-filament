@@ -5,6 +5,7 @@ namespace App\Filament\Resources\Types;
 use App\Filament\Resources\Types\Pages\ManageTypes;
 use App\Models\Type;
 use BackedEnum;
+use Carbon\Carbon;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
@@ -21,6 +22,7 @@ use Filament\Schemas\Schema;
 use Filament\Support\Colors\Color;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Filters\Filter;
 use Filament\Tables\Filters\TrashedFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
@@ -71,6 +73,7 @@ class TypeResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
+            ->defaultSort('created_at', 'desc')
             ->recordTitleAttribute('nombre')
             ->columns([
                 TextColumn::make('nombre')
@@ -98,6 +101,11 @@ class TypeResource extends Resource
             ])
             ->filters([
                 TrashedFilter::make(),
+                Filter::make('recientes')
+                    ->label('Últimos 7 días')
+                    ->query(fn (Builder $query): Builder =>
+                        $query->where('created_at', '>=', Carbon::now()->subDays(7))
+                    ),
             ])
             ->recordActions([
                 EditAction::make()

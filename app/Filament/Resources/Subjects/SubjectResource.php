@@ -5,6 +5,7 @@ namespace App\Filament\Resources\Subjects;
 use App\Filament\Resources\Subjects\Pages\ManageSubjects;
 use App\Models\Subject;
 use BackedEnum;
+use Carbon\Carbon;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
@@ -19,6 +20,7 @@ use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Filters\Filter;
 use Filament\Tables\Filters\TrashedFilter;
 use Filament\Tables\Table;
 use Filament\Tables\Filters\SelectFilter;
@@ -80,6 +82,7 @@ class SubjectResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
+            ->defaultSort('created_at', 'desc')
             ->recordTitleAttribute('nombre')
             ->columns([
                 TextColumn::make('nombre')
@@ -123,6 +126,11 @@ class SubjectResource extends Resource
                         'primero' => 'Primero',
                         'segundo' => 'Segundo',
                     ]),
+                Filter::make('recientes')
+                    ->label('Últimos 7 días')
+                    ->query(fn (Builder $query): Builder =>
+                        $query->where('created_at', '>=', Carbon::now()->subDays(7))
+                    ),
             ])
             ->recordActions([
                 EditAction::make()

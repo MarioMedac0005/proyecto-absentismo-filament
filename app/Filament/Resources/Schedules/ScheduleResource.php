@@ -8,6 +8,7 @@ use App\Models\Subject;
 use App\Models\User;
 use Auth;
 use BackedEnum;
+use Carbon\Carbon;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
@@ -22,6 +23,7 @@ use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Filters\Filter;
 use Filament\Tables\Filters\TrashedFilter;
 use Filament\Tables\Table;
 use Filament\Tables\Filters\SelectFilter;
@@ -107,6 +109,7 @@ class ScheduleResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
+            ->defaultSort('created_at', 'desc')
             ->recordTitleAttribute('dia_semana')
             ->columns([
                 TextColumn::make('dia_semana')
@@ -153,6 +156,11 @@ class ScheduleResource extends Resource
                 SelectFilter::make('subject_id')
                     ->label('Asignatura')
                     ->options(\App\Models\Subject::whereNotNull('nombre')->pluck('nombre', 'id')),
+                Filter::make('recientes')
+                    ->label('Últimos 7 días')
+                    ->query(fn (Builder $query): Builder =>
+                        $query->where('created_at', '>=', Carbon::now()->subDays(7))
+                    ),
             ])
             ->recordActions([
                 EditAction::make()

@@ -23,6 +23,7 @@ use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Filters\Filter;
 use Filament\Tables\Filters\TrashedFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
@@ -169,6 +170,7 @@ class CourseResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
+            ->defaultSort('created_at', 'desc')
             ->headerActions([
                     ActionGroup::make([
                         Action::make('downloadTemporalizationHeader')
@@ -262,6 +264,11 @@ class CourseResource extends Resource
                 SelectFilter::make('inicio_curso')
                     ->label('Año de inicio')
                     ->options(fn () => Course::whereNotNull('inicio_curso')->distinct()->pluck('inicio_curso', 'inicio_curso')->sort()->toArray()),
+                Filter::make('recientes')
+                    ->label('Últimos 7 días')
+                    ->query(fn (Builder $query): Builder =>
+                        $query->where('created_at', '>=', Carbon::now()->subDays(7))
+                    ),
             ])
             ->recordActions([
                 EditAction::make()
