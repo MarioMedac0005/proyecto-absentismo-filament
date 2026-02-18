@@ -115,7 +115,6 @@ class CalendarResource extends Resource
                     ->default(null),
 
                 Select::make('type_id')
-                    /* ->relationship('type', 'nombre') */
                     ->relationship('type', 'nombre', fn($query) => $query->whereNotNull('nombre'))
                     ->required()
                     ->validationMessages([
