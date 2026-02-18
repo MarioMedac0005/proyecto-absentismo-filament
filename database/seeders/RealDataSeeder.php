@@ -13,11 +13,29 @@ use Carbon\Carbon;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
 
+/**
+ * RealDataSeeder — Carga los datos reales del curso escolar 2024-2025 en la base de datos.
+ *
+ * Este seeder se ejecuta con: php artisan db:seed --class=RealDataSeeder
+ * (o con php artisan migrate:fresh --seed si se quiere resetear todo primero)
+ *
+ * Crea en orden:
+ * 1. Tipos de días del calendario (festivo, vacaciones, evaluación, examen)
+ * 2. Días festivos nacionales y autonómicos
+ * 3. Periodos de vacaciones escolares
+ * 4. Días de evaluación y exámenes
+ * 5. Los dos profesores reales del sistema
+ * 6. Los 6 cursos del ciclo formativo (DAW, DAM, ASIR)
+ * 7. Las asignaturas de cada curso con sus horarios
+ */
 class RealDataSeeder extends Seeder
 {
     public function run(): void
     {
-        // 1. Tipos de días
+        // =====================================================================
+        // 1. TIPOS DE DÍAS DEL CALENDARIO
+        // Cada tipo tiene un nombre y un color para mostrarse en el panel.
+        // =====================================================================
         $tipoFestivo = Type::create([
             'nombre' => 'Festivo',
             'color' => '#ff4141', // Rojo
@@ -25,6 +43,7 @@ class RealDataSeeder extends Seeder
 
         $tipoLectivo = Type::create([
             'nombre' => 'Lectivo',
+            // Sin color especial — es el tipo por defecto
         ]);
 
         $tipoVacaciones = Type::create([
@@ -42,7 +61,10 @@ class RealDataSeeder extends Seeder
             'color' => '#e67e22', // Naranja
         ]);
 
-        // 2. Calendario de Festivos
+        // =====================================================================
+        // 2. FESTIVOS NACIONALES Y AUTONÓMICOS (curso 2024-2025)
+        // Estos días se descontarán del cálculo de horas lectivas.
+        // =====================================================================
         $diasFestivos = [
             '2024-10-12', // Fiesta Nacional de España
             '2024-11-01', // Todos los Santos
@@ -65,7 +87,10 @@ class RealDataSeeder extends Seeder
             ]);
         }
 
-        // 3. Vacaciones - Periodos escolares
+        // =====================================================================
+        // 3. VACACIONES ESCOLARES — Se crean día a día dentro del periodo.
+        // Se comprueba que no exista ya un festivo en esa fecha para no duplicar.
+        // =====================================================================
         $periodosVacaciones = [
             // Vacaciones de Navidad
             ['inicio' => '2024-12-23', 'fin' => '2025-01-07', 'descripcion' => 'Vacaciones de Navidad'],
@@ -75,8 +100,9 @@ class RealDataSeeder extends Seeder
 
         foreach ($periodosVacaciones as $periodo) {
             $inicio = Carbon::parse($periodo['inicio']);
-            $fin = Carbon::parse($periodo['fin']);
-            
+            $fin    = Carbon::parse($periodo['fin']);
+
+            // Iterar cada día del periodo de vacaciones
             for ($fecha = $inicio->copy(); $fecha->lte($fin); $fecha->addDay()) {
                 // Evitar duplicar si ya existe un festivo en esa fecha
                 $existeFestivo = Calendar::where('fecha', $fecha->format('Y-m-d'))->exists();
@@ -90,7 +116,9 @@ class RealDataSeeder extends Seeder
             }
         }
 
-        // 4. Días de evaluación
+        // =====================================================================
+        // 4. DÍAS DE EVALUACIÓN — Uno al final de cada trimestre
+        // =====================================================================
         $diasEvaluacion = [
             '2024-12-20', // Final 1er trimestre
             '2025-03-28', // Final 2do trimestre
@@ -105,7 +133,9 @@ class RealDataSeeder extends Seeder
             ]);
         }
 
-        // 5. Días de examen (ejemplo)
+        // =====================================================================
+        // 5. DÍAS DE EXAMEN — Dos días antes de cada evaluación
+        // =====================================================================
         $diasExamen = [
             '2024-12-18', '2024-12-19', // Exámenes finales 1er trimestre
             '2025-03-26', '2025-03-27', // Exámenes finales 2do trimestre
@@ -120,35 +150,30 @@ class RealDataSeeder extends Seeder
             ]);
         }
 
-        // 6. Profesores
-        $nombresProfesores = [
-            'Juan Pérez',
-            'María García',
-            'Antonio López',
-            'Carmen Rodríguez',
-            'Manuel González',
-            'Ana Martínez',
-            'Francisco Hernández',
-            'Isabel Ruiz',
-            'David Sánchez',
-            'Laura Díaz',
-        ];
+        // =====================================================================
+        // 6. PROFESORES — Solo los dos usuarios reales del sistema
+        // Se les asigna el rol 'profesor' con Spatie Permission.
+        // =====================================================================
+        $mario = User::create([
+            'name' => 'Mario Ortiz Hidalgo',
+            'email' => 'moh0005@alu.medac.es',
+            'password' => Hash::make('Usuario123'),
+        ]);
+        $mario->assignRole('profesor');
 
-        $profesoresCreados = [];
+        $javier = User::create([
+            'name' => 'Javier Ruiz',
+            'email' => 'javier.ruiz@doc.medac.es',
+            'password' => Hash::make('Usuario123'),
+        ]);
+        $javier->assignRole('profesor');
 
-        foreach ($nombresProfesores as $nombre) {
-            $profesor = User::create([
-                'name' => $nombre,
-                'email' => strtolower(str_replace(' ', '.', $nombre)) . '@gmail.com',
-                'phone' => '600' . rand(100000, 999999),
-                'password' => Hash::make('Usuario123!'),
-            ]);
+        $profesoresCreados = [$mario, $javier];
 
-            $profesor->assignRole('profesor');
-            $profesoresCreados[] = $profesor;
-        }
-
-        // 4. Configuración de Cursos y Fechas
+        // =====================================================================
+        // 7. CONFIGURACIÓN DE CURSOS — Fechas de trimestres del curso 2024-2025
+        // Estas fechas son compartidas por todos los cursos del sistema.
+        // =====================================================================
         $fechasTrimestres = [
             'inicio_curso' => '2024',
             'fin_curso' => '2025',
@@ -160,6 +185,7 @@ class RealDataSeeder extends Seeder
             'trimestre_3_fin' => '2025-06-20',
         ];
 
+        // Lista de los 6 cursos del sistema (DAW, DAM y ASIR en 1º y 2º)
         $listadoCursos = [
             ['nombre' => '1º DAW', 'grado' => 'primero'],
             ['nombre' => '2º DAW', 'grado' => 'segundo'],
@@ -169,7 +195,10 @@ class RealDataSeeder extends Seeder
             ['nombre' => '2º ASIR', 'grado' => 'segundo'],
         ];
 
-        // 5. Configuración de Asignaturas (Malla Curricular)
+        // =====================================================================
+        // 8. MALLA CURRICULAR — Asignaturas y horas semanales de cada curso
+        // Clave: nombre del curso | Valor: array [nombre_asignatura => horas_semanales]
+        // =====================================================================
         $mallaCurricular = [
             '1º DAW' => [
                 'Programación' => 8,
@@ -220,14 +249,32 @@ class RealDataSeeder extends Seeder
             ],
         ];
 
-        // Bucle principal de creación
+        // Asignaturas de Mario en 1º DAW (solo estas 3 tienen horario asignado)
+        $asignaturasMario = [
+            'Programación' => 8,
+            'Bases de Datos' => 6,
+            'Entornos de Desarrollo' => 3,
+        ];
+
+        // Asignaturas de Javier en 1º DAM (solo estas 3 tienen horario asignado)
+        $asignaturasJavier = [
+            'Programación' => 8,
+            'Bases de Datos' => 6,
+            'Sistemas Informáticos' => 5,
+        ];
+
+        // =====================================================================
+        // BUCLE PRINCIPAL — Crear cursos, asignaturas y horarios
+        // =====================================================================
         foreach ($listadoCursos as $datosCurso) {
-            // Crear el curso con las fechas de trimestres
+            // Crear el curso combinando sus datos con las fechas de trimestres
             $curso = Course::create(array_merge($datosCurso, $fechasTrimestres));
 
+            // Obtener las asignaturas de la malla curricular para este curso
             $asignaturasDelCurso = $mallaCurricular[$curso->nombre] ?? [];
 
             foreach ($asignaturasDelCurso as $nombreAsignatura => $horasSemanales) {
+                // Crear la asignatura en la base de datos
                 $asignatura = Subject::create([
                     'nombre' => $nombreAsignatura,
                     'horas_semanales' => $horasSemanales,
@@ -235,32 +282,49 @@ class RealDataSeeder extends Seeder
                     'course_id' => $curso->id,
                 ]);
 
-                // Asignar profesor aleatorio
-                $profesor = $profesoresCreados[array_rand($profesoresCreados)];
-                
-                SubjectUser::create([
-                    'subject_id' => $asignatura->id,
-                    'user_id' => $profesor->id,
-                ]);
+                // Asignar Mario a sus asignaturas de 1º DAW y crear su horario
+                if ($curso->nombre === '1º DAW' && isset($asignaturasMario[$nombreAsignatura])) {
+                    SubjectUser::create(['subject_id' => $asignatura->id, 'user_id' => $mario->id]);
+                    $this->crearHorario($asignatura, $horasSemanales, $mario->id);
+                }
 
-                $this->crearHorario($asignatura, $horasSemanales);
+                // Asignar Javier a sus asignaturas de 1º DAM y crear su horario
+                if ($curso->nombre === '1º DAM' && isset($asignaturasJavier[$nombreAsignatura])) {
+                    SubjectUser::create(['subject_id' => $asignatura->id, 'user_id' => $javier->id]);
+                    $this->crearHorario($asignatura, $horasSemanales, $javier->id);
+                }
             }
         }
     }
 
-    private function crearHorario(Subject $asignatura, int $horasSemanales): void
+    /**
+     * Distribuye las horas semanales de una asignatura entre los días de la semana.
+     *
+     * Algoritmo: Asigna un máximo de 2 horas por día, repartiendo de lunes a viernes
+     * de forma cíclica hasta agotar todas las horas semanales.
+     *
+     * Ejemplo: 8 horas semanales → lunes 2h, martes 2h, miércoles 2h, jueves 2h.
+     * Ejemplo: 3 horas semanales → lunes 2h, martes 1h.
+     *
+     * @param Subject $asignatura    La asignatura a la que pertenece el horario.
+     * @param int     $horasSemanales Total de horas a distribuir en la semana.
+     * @param int     $userId        ID del profesor al que se asigna el horario.
+     */
+    private function crearHorario(Subject $asignatura, int $horasSemanales, int $userId): void
     {
         $diasSemana = ['lunes', 'martes', 'miercoles', 'jueves', 'viernes'];
         $horasRestantes = $horasSemanales;
-        $indiceDia = 0;
+        $indiceDia = 0; // Índice para recorrer los días de la semana
 
         while ($horasRestantes > 0) {
-            $horasHoy = min(2, $horasRestantes); // Máximo 2 horas por bloque
+            // Asignar máximo 2 horas por día (o las que queden si son menos de 2)
+            $horasHoy = min(2, $horasRestantes);
 
             Schedule::create([
-                'dia_semana' => $diasSemana[$indiceDia % 5],
+                'dia_semana' => $diasSemana[$indiceDia % 5], // % 5 para volver a lunes si se supera viernes
                 'horas' => $horasHoy,
                 'subject_id' => $asignatura->id,
+                'user_id' => $userId,
             ]);
 
             $horasRestantes -= $horasHoy;
