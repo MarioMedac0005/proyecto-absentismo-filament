@@ -29,8 +29,8 @@ class SubjectHoursResource extends Resource
     // Modelo Eloquent sobre el que trabaja este recurso
     protected static ?string $model = Subject::class;
 
-    // Slug de la URL: /admin/subject-hours
-    protected static ?string $slug = 'subject-hours';
+    // Slug de la URL: /horas-asignatura
+    protected static ?string $slug = 'horas-asignatura';
 
     // Etiqueta plural que aparece en el panel (se sobreescribe dinámicamente abajo)
     protected static ?string $pluralLabel = 'Horas por Asignatura';

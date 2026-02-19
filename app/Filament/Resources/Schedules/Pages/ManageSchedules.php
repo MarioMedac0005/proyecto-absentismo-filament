@@ -19,7 +19,13 @@ class ManageSchedules extends ManageRecords
             ->modalDescription('Introduce los datos del horario')
             ->modalIcon('heroicon-o-clock')
             ->modalWidth('xl')
-            ,
+            ->mutateFormDataUsing(function (array $data): array {
+                // Si el usuario es profesor, asignar automáticamente su propio ID
+                if (auth()->user()->hasRole('profesor')) {
+                    $data['user_id'] = auth()->id();
+                }
+                return $data;
+            }),
         ];
     }
     public function getSubheading(): ?string
